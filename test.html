@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Table Test</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-200 min-h-screen flex items-center justify-center p-10">
+
+  <div class="w-full max-w-5xl bg-slate-100 rounded-xl shadow-lg overflow-hidden border border-slate-300">
+
+    <!-- Title Section -->
+    <div class="px-6 py-4 bg-slate-300 border-b border-slate-400">
+      <h2 class="text-lg font-semibold text-slate-800">Purchase History</h2>
+      <p class="text-sm text-slate-600">Recent transactions</p>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+
+        <!-- Table Head -->
+        <thead class="bg-slate-400 text-slate-900 text-sm uppercase tracking-wide">
+          <tr>
+            <th class="px-6 py-4">Date</th>
+            <th class="px-6 py-4">Product</th>
+            <th class="px-6 py-4">Quantity</th>
+            <th class="px-6 py-4">Price</th>
+            <th class="px-6 py-4">Receipt</th>
+          </tr>
+        </thead>
+
+        <!-- Table Body -->
+        <tbody class="text-slate-800">
+
+          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
+            <td class="px-6 py-4">01/21/24</td>
+            <td class="px-6 py-4 font-medium">Lubricant</td>
+            <td class="px-6 py-4">2</td>
+            <td class="px-6 py-4">$15.00</td>
+            <td class="px-6 py-4">
+              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
+                View
+              </a>
+            </td>
+          </tr>
+
+          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
+            <td class="px-6 py-4">01/22/24</td>
+            <td class="px-6 py-4 font-medium">Lubricant</td>
+            <td class="px-6 py-4">2</td>
+            <td class="px-6 py-4">$15.00</td>
+            <td class="px-6 py-4">
+              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
+                View
+              </a>
+            </td>
+          </tr>
+
+          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
+            <td class="px-6 py-4">01/23/24</td>
+            <td class="px-6 py-4 font-medium">Lubricant</td>
+            <td class="px-6 py-4">2</td>
+            <td class="px-6 py-4">$15.00</td>
+            <td class="px-6 py-4">
+              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
+                View
+              </a>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+</body>
+</html>

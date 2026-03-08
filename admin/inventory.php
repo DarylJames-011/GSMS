@@ -274,6 +274,64 @@ border border-[#1A2F58]/50 h-full p-2">
 </div>
 </template>
 
+<template>  
+</template>
+
+<div class="fixed w-screen h-screen flex flex-row items-center justify-center z-50">
+    <div class="bg-white h-[65%] w-[50%] border border-[#1A2F58]/20 shadow-lg rounded
+    flex flex-col p-2 text-[#1A2F58] font-inter">
+    <div class="flex flex-row justify-between items-center py-1 mb-1">
+    <span class="font-inter text-base font-semibold">Receive an Order</span>
+    <button class="text-xl text-[#B22222] pr-1 close-btn"><i class="fa-solid fa-x"></i></button>
+  </div>
+  <div class="w-full border-t border-[#1A2F58]/50 mb-2"></div>
+  <form class="flex flex-col h-full gap-2">
+    <div class="flex flex-row gap-3 h-full">
+          <div class="w-3/4  h-full flex flex-col">
+    <div class="flex flex-row gap-3 pt-1">
+      <div class="flex flex-col">
+        <label>Invoice Number</label>
+        <input autocomplete="off" type="text" name="invoice" id="invoice" class="bg-[#F5F5F5] w-full p-1 focus:outline-[#1A2F58] border border-[#1A2F58]/30 rounded-md" required>
+      </div>
+      <div class="flex flex-col">
+        <label>Supplier Name</label>
+        <input autocomplete="off" type="text" name="invoice" id="invoice" class="bg-[#F5F5F5] w-full p-1 focus:outline-[#1A2F58] border border-[#1A2F58]/30 rounded-md" required>
+      </div>
+    </div>
+    <div class="flex flex-row gap-5 mb-2">
+      <div class="flex flex-col">
+        <label>Date Ordered</label>
+        <input autocomplete="off" type="date" name="invoice" id="invoice" class="bg-[#F5F5F5] w-full p-1 focus:outline-[#1A2F58] border border-[#1A2F58]/30 rounded-md" required>
+      </div>
+      <div class="flex flex-col">
+        <label>Date Received</label>
+        <input autocomplete="off" type="date" name="invoice" id="invoice" class="bg-[#F5F5F5] w-full p-1 focus:outline-[#1A2F58] border border-[#1A2F58]/30 rounded-md" required>
+      </div>
+    </div>
+    <span>Description</span>
+    <textarea name="note" id="note" maxlength="90" class="bg-[#F5F5F5] p-1 h-[50%] resize-none focus:outline-[#1A2F58] border border-[#1A2F58]/30 rounded-sm"></textarea>
+  </div>
+    <div class="w-[70%] h-full gap-3 flex flex-col">
+    <div class="flex flex-row justify-between items-center">
+      <span>Products Ordered</span>
+      <button type="button" class="p-1 bg-[#1A2F58] rounded-sm text-white">Add Products</button>
+      </div>
+      <div class="border border-[#1A2F58]/30 bg-[#F5F5F5] h-full  "></div>
+    </div>
+    </div>
+    <div class="flex flex-row w-full justify-between items-center">
+      <span class="text-xs">Please Double Check the information before saving.</span>
+      <button class="py-2 text-white rounded bg-[#1A2F58] w-[47%]">Save</button>
+    </div>
+
+    </div>
+
+   
+  </form>
+  </div>
+</div>
+
+
 
 <nav class="w-64 bg-[#173161] h-screen fixed top-0 left-0 shadow-[5px_0_10px_3px_rgba(0,0,0,0.25)]
     flex flex-col items-center justify-between">

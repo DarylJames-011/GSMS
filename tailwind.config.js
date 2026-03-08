@@ -5,7 +5,8 @@ module.exports = {
   "./*.html",
   "./**/*.php",            // <-- scan all PHP files
   "./admin/**/*.{html,js,php}",
-  "./cashier/**/*.{html,js,php}",
+  "./js/cashier/**/*",
+    
 ],
   theme: {
     extend: {

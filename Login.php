@@ -13,35 +13,58 @@ if (isset($_SESSION['user_id']) && isset($_SESSION['role'])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    header('Content-Type: application/json');
+
     $username = $_POST['username'];
     $password = $_POST['password'];
 
-    // Prepare query (plain passwords for now)
-    $stmt = $conn->prepare("SELECT user_ID, role FROM user_table WHERE username = ? AND password = ?");
-    $stmt->bind_param("ss", $username, $password);
+    $stmt = $conn->prepare("SELECT user_ID, role, password FROM user_table WHERE username = ?");
+
+    if (!$stmt) {
+        echo json_encode([
+            "status" => "error",
+            "type" => "database_error"
+        ]);
+        exit;
+    }
+
+    $stmt->bind_param("s", $username);
     $stmt->execute();
     $result = $stmt->get_result();
 
-    if ($result->num_rows > 0) {
-        $user = $result->fetch_assoc();
-
-        // Save session info
-        $_SESSION['user_id'] = $user['user_ID'];
-        $_SESSION['role'] = $user['role'];
-
-        // Redirect based on role
-        if ($user['role'] === 'Administrator') {
-            header("Location: admin/dashboard.php");
-        } else {
-            header("Location: cashier/dashboard1.php");
-        }
+    // User not found
+    if ($result->num_rows === 0) {
+        echo json_encode([
+            "status" => "error",
+            "type" => "user_not_found"
+        ]);
         exit;
-
-    } else {
-        echo "Invalid username or password!";
     }
 
-    $stmt->close();
+    $user = $result->fetch_assoc();
+
+    if ($password !== $user['password']) {
+        echo json_encode([
+            "status" => "error",
+            "type" => "wrong_password"
+        ]);
+        exit;
+    }
+
+    $_SESSION['user_id'] = $user['user_ID'];
+    $_SESSION['role'] = $user['role'];
+
+    $redirect = ($user['role'] === 'Administrator')
+        ? "admin/dashboard.php"
+        : "cashier/dashboard1.php";
+
+    echo json_encode([
+        "status" => "success",
+        "redirect" => $redirect
+    ]);
+
+    exit;
 }
 ?>
 
@@ -64,6 +87,80 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <!-- Tailwind CSS -->
 
 </head>
+
+<script>
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    const form = document.getElementById("loginForm");
+    const errorBox = document.getElementById("errormsg");
+    const usernameInput = document.getElementById("usern");
+    const passwordInput = document.getElementById("passw");
+    if (!form) return; // safety check
+
+
+        function removeBgTint() {
+        passwordInput.style.backgroundColor = "";
+        usernameInput.style.backgroundColor = "";
+        }
+
+
+            usernameInput.addEventListener("input", removeBgTint);
+            passwordInput.addEventListener("input", removeBgTint);
+
+    form.addEventListener("submit", function(e) {
+        e.preventDefault();
+
+
+        let formData = new FormData(this);
+
+        fetch("", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+
+            if (data.status === "success") {
+                window.location.href = data.redirect;
+                return;
+            }
+
+            // Set error message
+            switch (data.type) {
+                case "user_not_found":
+                    errorBox.textContent = "User does not exist.";
+                    break;
+
+                case "wrong_password":
+                    errorBox.textContent = "Incorrect username or password.";
+                    usernameInput.style.backgroundColor = "#fee2e2"; // soft red
+                    passwordInput.style.backgroundColor = "#fee2e2"; // soft red
+                    break;
+
+                case "database_error":
+                    errorBox.textContent = "System error. Please try again later.";
+                    break;
+
+                default:
+                    errorBox.textContent = "Unexpected error.";
+            }
+
+            // Fade in
+            errorBox.classList.remove("opacity-0");
+            errorBox.classList.add("opacity-100");
+
+
+        })
+        .catch(error => {
+            console.error("Fetch error:", error);
+        });
+    });
+
+});
+</script>
+
 <body class="bg-[FEFFFA] flex justify-between h-screen font-inter">
     <div class="font-bold  flex-1 flex justify-center items-center p-9">
         <div class="flex h-[96%] w-[90%] flex-col gap-7">
@@ -72,20 +169,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <p class="font-semibold text-3xl text-blue-950">LOGIN</p>
                     <p class="font-poppins font-light text-[14px] text-[#737373]">Please Enter your Details.</p>
                     <br>
-                <form class="flex flex-col font-poppins mb-10" method="post" action="">
+                <form class="flex flex-col font-poppins mb-10" id="loginForm">
                     <label class="font-medium text-sm mb-1 text-[#3B3B3B]">Username</label>
-                    <input type="text" name="username" class="w-[80%] 
-                    h-1/4 text-[16px] font-inter font-normal p-2 border border-1 border-black rounded-[3px] mb-3"
+                    <input id="usern" type="text" name="username" class="w-[80%] 
+                    h-1/4 text-[16px] font-inter font-normal p-2 border border-1 border-black rounded-[3px] mb-3 transition-colors duration-300"
                     autocomplete="off">
                    
                     <label class="font-medium text-sm mb-1 text-[#3B3B3B]">Password</label>
-                    <input type="password" name="password" autocomplete="new-password" class="w-[80%] 
-                    h-1/4 text-[16px] font-inter font-normal p-2 border border-1 border-black rounded-[3px] mb-3">
+                    <input id="passw" type="password" name="password" autocomplete="new-password" class="w-[80%] 
+                    h-1/4 text-[16px] font-inter font-normal p-2 border border-1 border-black rounded-[3px] mb-3 transition-all duration-300" >
                 
-                    <div class="flex flex-row justify-between w-[80%] mb-3">
-                       <div class="font-poppins font-medium text-sm text-[#3B3B3B]">
-                        <input type="checkbox" class=" border-black rounded checked:bg-blue-950 checked:border-blue-950 mr-1"><label>Show Password</label>
-                       </div> 
+                    <div class="flex flex-row justify-between w-[80%] mb-3 items-center">
+                        <div id="errormsg"
+                            class="font-inter font-medium text-sm text-[#B22222] opacity-0 transition-opacity duration-300">
+                            Incorrect Username or Password
+                        </div>
                        <a class="w-max h-max font-medium text-sm text-[#1B2D50]" href="#"><u>Forget Password?</u></a>
                     </div>
                     

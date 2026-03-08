@@ -25,7 +25,7 @@ if ($_SESSION['role'] !== 'Cashier') {
   <link href="../dist/output.css" rel="stylesheet">
   <!-- Fonts Awesome-->
   <script src="https://kit.fontawesome.com/09f8ae972d.js" crossorigin="anonymous"></script>  
-  <script src="../js/dashboard.js" defer></script>
+  <script src="../js/cashier/dashboard.js" defer></script>
   <!-- JS Chart-->  
 
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

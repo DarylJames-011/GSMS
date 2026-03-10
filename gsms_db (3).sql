@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Mar 08, 2026 at 06:08 PM
+-- Generation Time: Mar 10, 2026 at 06:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,7 +40,7 @@ CREATE TABLE `fuel_tbl` (
 --
 
 INSERT INTO `fuel_tbl` (`fuel_id`, `fuel_type`, `price_per_ltr`, `stock_ltrs`, `date_created`) VALUES
-(1, 'Diesel', 52, 19917, '2026-02-26 13:22:33'),
+(1, 'Diesel', 52, 19873, '2026-02-26 13:22:33'),
 (2, 'Unleaded', 55, 19002, '2026-02-27 06:11:17'),
 (3, 'Premium', 58, 18785, '2026-02-27 06:11:32');
 
@@ -67,13 +67,10 @@ CREATE TABLE `product_tbl` (
 --
 
 INSERT INTO `product_tbl` (`product_id`, `product_name`, `price`, `stock`, `description`, `status`, `restock_date`, `image`, `date_created`) VALUES
-(1, '212', 82, 0, '12', 'Unavailable', NULL, 'prod_69a3318f8469c.jpg', '0000-00-00 00:00:00'),
-(2, '121', 21, 0, 'a horse', 'Unavailable', NULL, 'prod_69a33259817df.jpg', '2026-03-01 02:22:17'),
-(3, '121a', 53, 0, '21v', 'Unavailable', NULL, 'prod_69a3326e37a8e.jpg', '2026-03-01 02:22:38'),
 (4, 'dia', 54, 0, 'dada', 'Unavailable', NULL, 'prod_69a332b52f4e4.jpg', '2026-03-01 02:23:49'),
-(5, 'Brake Fluid', 56, 10, 'This so expensive ngl', 'Low', NULL, 'prod_69a3330e1cf9a.png', '2026-03-01 02:25:18'),
+(5, 'Brake Fluid', 56, 7, 'This so expensive ngl', 'Low', NULL, 'prod_69a3330e1cf9a.png', '2026-03-01 02:25:18'),
 (6, 'Another this', 641, 0, '21csa', 'Unavailable', NULL, 'prod_69a3366688be8.png', '2026-03-01 02:39:34'),
-(7, 'yum yum', 1531, 15, '131c', 'Available', NULL, 'prod_69a40c926b031.png', '2026-03-01 17:53:22'),
+(7, 'yum yum', 1531, 8, '131c', 'Low', NULL, 'prod_69a40c926b031.png', '2026-03-01 17:53:22'),
 (8, 'birb', 2313, 0, 'this is a cute looking birb, not gonna lie\r\n\r\n', 'Unavailable', NULL, 'prod_69a4143ddc9aa.jpg', '2026-03-01 18:26:05');
 
 --
@@ -261,6 +258,41 @@ CREATE TABLE `transaction_items` (
   `subtotal` decimal(10,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `transaction_items`
+--
+
+INSERT INTO `transaction_items` (`transaction_id2`, `transaction_id`, `product_type`, `product_id`, `quantity`, `price`, `subtotal`) VALUES
+(3, 6, 'product', 7, 2, 1531, 3062),
+(4, 7, 'product', 7, 5, 1531, 7655),
+(5, 8, 'product', 5, 2, 56, 112),
+(6, 8, 'product', 7, 2, 1531, 3062),
+(7, 9, 'fuel', 1, 19, 52, 1000),
+(8, 9, 'product', 5, 1, 56, 56),
+(9, 10, 'fuel', 1, 25, 52, 1300);
+
+--
+-- Triggers `transaction_items`
+--
+DELIMITER $$
+CREATE TRIGGER `reduce_stock_after_transaction` AFTER INSERT ON `transaction_items` FOR EACH ROW BEGIN
+    -- Reduce product stock
+    IF NEW.product_type = 'product' THEN
+        UPDATE product_tbl
+        SET stock = GREATEST(stock - NEW.quantity, 0)
+        WHERE product_id = NEW.product_id;
+    END IF;
+
+    -- Reduce fuel stock (liters)
+    IF NEW.product_type = 'fuel' THEN
+        UPDATE fuel_tbl
+        SET stock_ltrs = GREATEST(stock_ltrs - NEW.quantity, 0)
+        WHERE fuel_id = NEW.product_id;
+    END IF;
+END
+$$
+DELIMITER ;
+
 -- --------------------------------------------------------
 
 --
@@ -271,9 +303,21 @@ CREATE TABLE `transaction_tbl` (
   `transaction_id` int(11) NOT NULL,
   `transaction_no` varchar(255) NOT NULL,
   `user_id` int(11) NOT NULL,
+  `payment_method` enum('Cash','Credit','Online','','') NOT NULL,
   `date_created` datetime NOT NULL,
   `total_amt` decimal(10,0) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `transaction_tbl`
+--
+
+INSERT INTO `transaction_tbl` (`transaction_id`, `transaction_no`, `user_id`, `payment_method`, `date_created`, `total_amt`) VALUES
+(6, 'TRNS-006', 4, 'Cash', '2026-03-11 01:23:42', 3062),
+(7, 'TRNS-007', 4, 'Cash', '2026-03-11 01:26:22', 7655),
+(8, 'TRNS-008', 4, 'Cash', '2026-03-11 01:27:39', 3174),
+(9, 'TRNS-009', 4, 'Cash', '2026-03-11 01:29:26', 1056),
+(10, 'TRNS-010', 4, 'Cash', '2026-03-11 01:30:44', 1300);
 
 -- --------------------------------------------------------
 
@@ -344,7 +388,14 @@ ALTER TABLE `shifts`
 -- Indexes for table `transaction_items`
 --
 ALTER TABLE `transaction_items`
-  ADD PRIMARY KEY (`transaction_id2`);
+  ADD PRIMARY KEY (`transaction_id2`),
+  ADD KEY `fk_transaction` (`transaction_id`);
+
+--
+-- Indexes for table `transaction_tbl`
+--
+ALTER TABLE `transaction_tbl`
+  ADD PRIMARY KEY (`transaction_id`);
 
 --
 -- Indexes for table `user_table`
@@ -396,7 +447,13 @@ ALTER TABLE `shifts`
 -- AUTO_INCREMENT for table `transaction_items`
 --
 ALTER TABLE `transaction_items`
-  MODIFY `transaction_id2` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `transaction_id2` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+
+--
+-- AUTO_INCREMENT for table `transaction_tbl`
+--
+ALTER TABLE `transaction_tbl`
+  MODIFY `transaction_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `user_table`
@@ -414,6 +471,12 @@ ALTER TABLE `user_table`
 ALTER TABLE `received_order_fuel`
   ADD CONSTRAINT `fk_fuel` FOREIGN KEY (`fuel_id`) REFERENCES `fuel_tbl` (`fuel_id`) ON UPDATE CASCADE,
   ADD CONSTRAINT `fk_invoice` FOREIGN KEY (`invoice_number`) REFERENCES `received_order` (`invoice_number`);
+
+--
+-- Constraints for table `transaction_items`
+--
+ALTER TABLE `transaction_items`
+  ADD CONSTRAINT `fk_transaction` FOREIGN KEY (`transaction_id`) REFERENCES `transaction_tbl` (`transaction_id`) ON DELETE CASCADE ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

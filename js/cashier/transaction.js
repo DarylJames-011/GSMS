@@ -1,4 +1,5 @@
 
+
 const modalWrapper = document.getElementById('wrapper');
 const modalOverlay = document.getElementById('overlay');
 
@@ -14,6 +15,29 @@ function openModal1(templateId) {
   });
 
  
+}
+
+ function showSnackbar(message, type = "info", duration = 3000) {
+    const snackbar = document.getElementById("snackbar");
+
+    // Set text
+    snackbar.textContent = message;
+
+    // Background color
+    const colors = { success:"#16a34a", error:"#dc2626", info:"#2563eb" };
+    snackbar.style.backgroundColor = colors[type] || colors.info;
+
+    // Show
+    snackbar.style.opacity = "1";
+    snackbar.style.pointerEvents = "auto";
+    snackbar.style.transform = "translateX(-50%) translateY(0)";
+
+    // Hide after duration
+    setTimeout(() => {
+        snackbar.style.opacity = "0";
+        snackbar.style.pointerEvents = "none";
+        snackbar.style.transform = "translateX(-50%) translateY(50px)"; // slide down
+    }, duration);
 }
 
 function closeform() { 
@@ -59,8 +83,6 @@ document.addEventListener("keydown", function(event) {
   }
 });
 
-let products_array = [];  
-
 
 function populate() {
   fuelpopulate();
@@ -104,7 +126,7 @@ function populate() {
               </span>
 
               <div class="flex items-end justify-end w-full">
-                <button onclick="addProduct(${product.product_id})" ${buttonDisabled} class="${buttonClasses}">
+                <button onclick="addProduct('product',${product.product_id})" ${buttonDisabled} class="${buttonClasses}">
                 <i class="fa-solid fa-plus text-xl ${product.stock === 0 ? 'text-white' : 'text-[#F8F8FF]'}"></i>
                </button>
 
@@ -124,7 +146,7 @@ function populate() {
 }
 
 let cart = {}; 
-
+const max_liters = 5000;
 
 document.addEventListener("keydown", (e) => {
     // e.code is "F3" when F3 is pressed
@@ -139,82 +161,146 @@ document.addEventListener("keydown", (e) => {
     }
 });
 
-function addProduct(productId) {
+function addProduct(type,id) {
     document.getElementById("clear-cart-btn").addEventListener("click", () => {
     cart = {};          // empty the cart
     renderCart();       // refresh the table
     updateSummary();
   });
 
-    const product = products_array.find(p => Number(p.product_id) === Number(productId));
-    if (!product) return;
+      if (type === "product") {
 
-    if ((cart[product.product_id] || 0) >= Number(product.stock)) {
-        alert("Cannot exceed available stock");
-        return;
+        const product = products_array.find(p => Number(p.product_id) === Number(id));
+        if (!product) return;
+
+        if ((cart[product.product_id] || 0) >= Number(product.stock)) {
+            alert("Cannot exceed available stock");
+            return;
+        }
+
+        cart[product.product_id] = (cart[product.product_id] || 0) + 1;
+
     }
 
-    cart[product.product_id] = (cart[product.product_id] || 0) + 1;
-    renderCart();
-}
+    if (type === "fuel") {
 
+        const fuel = fuels_array.find(f => Number(f.fuel_id) === Number(id));
+        if (!fuel) return;
+           const number = parseFloat(
+          fuel_amt.textContent
+              .replace("₱", "")
+              .replace(/,/g, "")
+              .trim()
+      );
+
+        const fuel_ltrs = Math.round((number / selectedprice) * 100) / 100;
+        let totalLitersInCart = 0;
+        for (let key in cart) {
+            const item = cart[key];
+            if (typeof item === "object" && item.liters) {
+                totalLitersInCart += item.liters;
+            }
+        }
+
+        // check transaction cap
+        if (totalLitersInCart + fuel_ltrs > max_liters) {
+            alert(`Cannot add fuel. Total liters per transaction cannot exceed ${max_liters} L.`);
+            return;
+        }
+          
+       if (cart[fuel.fuel_id]) {
+          // already in cart, increment
+          cart[fuel.fuel_id].pesos += number;
+          cart[fuel.fuel_id].liters += fuel_ltrs;
+      } else {
+          cart[fuel.fuel_id] = {
+              type: fuel.fuel_type,
+              pesos: number,
+              liters: fuel_ltrs
+          };
+      }
+
+    }
+    renderCart();
+
+    
+  }
 function renderCart() {
+
     const tbody = document.getElementById("cart-body");
     tbody.innerHTML = ""; // clear previous rows
 
-    let grandTotal = 0;
-
-    for (let productId in cart) {
-        const qty = cart[productId];
-        const product = products_array.find(p => Number(p.product_id) === Number(productId));
-        if (!product) continue;
-
-        const total = Number(product.price) * qty;
-
-        const unitPriceFormatted = Number(product.price).toLocaleString('en-PH', { minimumFractionDigits: 2 });
-        const totalFormatted = total.toLocaleString('en-PH', { minimumFractionDigits: 2 });
-
+    for (let key in cart) {
+        const item = cart[key];
         const tr = document.createElement("tr");
-        tr.innerHTML = `
-            <td class="py-2 px-2 font-inter font-semibold">${product.product_name}</td>
-            <td class="py-2 px-2 font-inter font-semibold">₱ ${unitPriceFormatted}</td>
-            <td class="py-2 px-2 font-inter font-semibold">${qty}</td>
-           <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${totalFormatted}</td>
-          
-            <td>
-                <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
-                        onclick="removeProduct(${product.product_id})">
-                    <i class="fa-solid fa-minus text-white"></i>
-                </button>
-            </td>
-        `;
+
+        // Check if the item is a product (number) or fuel (object)
+        if (typeof item === "number") {
+            // Product
+            const productId = Number(key);
+            const product = products_array.find(p => Number(p.product_id) === productId);
+            if (!product) continue;
+
+            const qty = item;
+            const total = Number(product.price) * qty;
+            const unitPriceFormatted = Number(product.price).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            const totalFormatted = total.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+            tr.innerHTML = `
+                <td class="py-2 px-2 font-inter font-semibold">${product.product_name}</td>
+                <td class="py-2 px-2 font-inter font-semibold">₱ ${unitPriceFormatted}</td>
+                <td class="py-2 px-2 font-inter font-semibold">${qty}</td>
+                <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${totalFormatted}</td>
+                <td>
+                    <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
+                            onclick="removeCartItem(${product.product_id})">
+                        <i class="fa-solid fa-minus text-white"></i>
+                    </button>
+                </td>
+            `;
+        } else if (typeof item === "object") {
+            // Fuel
+            tr.innerHTML = `
+                <td class="py-2 px-2 font-inter font-semibold">${item.type} (Fuel)</td>
+                <td class="py-2 px-2 font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td class="py-2 px-2 font-inter font-semibold">${item.liters} L</td>
+                <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td>
+                    <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
+                            onclick="removeCartItem('${key}')">
+                        <i class="fa-solid fa-minus text-white"></i>
+                    </button>
+                </td>
+            `;
+        }
+
         tbody.appendChild(tr);
-        updateSummary();
     }
 
-    
+    updateSummary();
 }
 
-function removeProduct(productId) {
-    if (!cart[productId]) return;
+function removeCartItem(key) {
+    if (!cart[key]) return;
 
-    cart[productId]--;
-    if (cart[productId] <= 0) delete cart[productId];
+    if (typeof cart[key] === "number") {
+        // Product
+        cart[key]--;
+        if (cart[key] <= 0) delete cart[key];
+    } else if (typeof cart[key] === "object") {
+        // Fuel
+        delete cart[key];
+    }
 
     renderCart();
-} 
- 
+}
+
+let products_array = [];  
+let fuel_amt = null;
+let fuel_id = null;
 let fuels_array = []; //list of fuels
-let phButtons = [];
-let literButtons = [];
-let customInput;
-let toggleBtn;
 let selectedFuel = null; // the fuel currently selected
-let selectedAmount = 0; // ₱ value
-let selectedLiters = 0; // liter value
-let isByLiters = true; 
-
-
+let selectedprice = null;
 
 
 function fuelpopulate() {
@@ -254,148 +340,222 @@ function fuelpopulate() {
           `;
           btn.onclick = () => selectFuel(index);
       });
-       buttons();
+       initializefuel();
   })
   .catch(err => console.error(err));   
 }
-
 function selectFuel(index) {
     const fuel = fuels_array[index];
     selectedFuel = fuels_array[index];
     if (!fuel || Number(fuel.stock_liters) === 0) return; // cannot select out-of-stock fuel
-
+    fuel_id = Number(fuel.fuel_id);
     // Update your selected fuel panel
     document.getElementById("fuel-name").textContent = fuel.fuel_type;
+    selectedprice = Number(fuel.price_per_ltr).toFixed(2);
+    fuelcapacity = fuel.stock_ltrs;
+    capacity = fuelcapacity;
     document.getElementById("fuel-price").textContent = `₱ ${Number(fuel.price_per_ltr).toFixed(2)}`;
     
-    // You can also reset denominations/inputs here if needed
-    clearDenominations();
-    updateFuelTotal();
+
 }
 
-function buttons() {
-    // Grab elements now that the DOM exists
-    customInput = document.getElementById("custom-input");
-    toggleBtn = document.getElementById("custom-toggle-btn");
-
-    phButtons = document.querySelectorAll("#denominations-ph .deno-btn");
-    literButtons = document.querySelectorAll("#denominations-ltr .deno-btn");
-
-    // Toggle button listener
-    toggleBtn.addEventListener("click", () => {
-        isByLiters = !isByLiters;
-        toggleBtn.textContent = isByLiters ? "By Liters" : "By ₱";
-
-        if (isByLiters) selectedAmount = 0;
-        else selectedLiters = 0;
-
-        customInput.value = "";
-        updateFuelTotal();
+let mode = "liters"; 
+function initializefuel() {
+    function resetButtons() {
+    buttons.forEach(b => {
+        b.classList.remove("bg-[#1A2F58]", "text-white");
+        b.classList.add("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]", "transition", "duration-200");
     });
-
-    // Input listener
-    customInput.addEventListener("input", () => {
-        const val = Number(customInput.value) || 0;
-
-        if (isByLiters) {
-            selectedLiters = val;
-            selectedAmount = 0;
-        } else {
-            selectedAmount = val;
-            selectedLiters = 0;
         }
+    
+const toggleBtn = document.getElementById("toggle-btn");
+const fuelinput = document.getElementById("custom-input");
+const fuelvalue = document.getElementById("fuel-total-amount");
+const buttons = document.querySelectorAll(".deno-btn");
 
-        updateFuelTotal();
-    });
-
-    // PH buttons
-    phButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            selectedAmount = Number(btn.dataset.value);
-            selectedLiters = 0;
-
-            phButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-            btn.classList.add("bg-[#1A2F58]", "text-white");
-
-            literButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-            document.getElementById("custom-liter-input").value = "";
-
-            updateFuelTotal();
-        });
-    });
-
-    // Liter buttons
-    literButtons.forEach(btn => {
-        btn.addEventListener("click", () => {
-            selectedLiters = Number(btn.dataset.value);
-            selectedAmount = 0;
-
-            literButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-            btn.classList.add("bg-[#1A2F58]", "text-white");
-
-            phButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-            document.getElementById("custom-amount-input").value = "";
-
-            updateFuelTotal();
-        });
-    });
-}
-
-function updateFuelTotal() {
-    if (!selectedFuel) return;
-
-    const totalEl = document.getElementById("fuel-total-amount");
-    if (!totalEl) return; // extra safety check
-
-    const pricePerLtr = Number(selectedFuel.price_per_ltr);
-    let total = 0;
-    let liters = 0;
-
-    if (selectedAmount > 0) {
-        liters = selectedAmount / pricePerLtr;
-        total = selectedAmount;
-    } else if (selectedLiters > 0) {
-        total = selectedLiters * pricePerLtr;
-        liters = selectedLiters;
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
+     if (selectedFuel === null) {
+        alert("Please select fuel type first");
+        return;
     }
 
-    totalEl.textContent = `₱ ${total.toLocaleString('en-PH', { minimumFractionDigits: 2 })} ≈ ${liters.toFixed(2)} L`;
+
+    // remove active state from all buttons
+    buttons.forEach(b => {
+      b.classList.remove("bg-[#1A2F58]", "text-white");
+      b.classList.add("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]","transition","duration-200");
+      selectedValue = Number(btn.dataset.value);
+      
+      const formatted = selectedValue.toLocaleString("en-PH", {
+      style: "currency",
+      currency: "PHP"
+    });
+         if (btn.closest("#deno-ph")) {
+           fuelinput.value = "";
+           fuelvalue.textContent = formatted;      
+        }
+
+        if (btn.closest("#deno-l")) {
+            fuelinput.value = "";
+            const total = selectedValue * selectedprice;
+         const formattedTotal = total.toLocaleString("en-PH", {
+            style: "currency",
+            currency: "PHP"
+        });
+            fuelvalue.textContent = formattedTotal;
+        }    
+        
+    });
+
+    
+    // activate clicked button
+    btn.classList.remove("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]","transition","duration-200");
+    btn.classList.add("bg-[#1A2F58]", "text-white");
+  });
+});
+
+ mode = mode === "liters" ? "pesos" : "liters";
+
+  fuelinput.addEventListener("input", () => {
+    if (!selectedFuel) {
+      fuelinput.value = "";
+        alert("Please select fuel type first");      
+        return;
+    }
+    resetButtons();
+
+  const value = Number(fuelinput.value); // get numeric value
+  if(isNaN(value) || value <= 0) {
+    fuelvalue.textContent = "₱ 0.00"; // reset if empty/invalid
+    return;
+  }
+
+  if(mode === "liters") {
+    // User typed liters → calculate price
+    const total = value * selectedprice;
+    fuelvalue.textContent = total.toLocaleString("en-PH", { style: "currency", currency: "PHP" });
+  }
+
+  if(mode === "pesos") {
+    // User typed amount → calculate liters
+    const liters = value;
+    fuelvalue.textContent = liters.toLocaleString("en-PH", { style: "currency", currency: "PHP" });
+  }
+
+});
+
+toggleBtn.addEventListener("click", () => {
+    mode = mode === "liters" ? "pesos" : "liters";
+
+    // Update button text & style
+    toggleBtn.textContent = mode === "liters" ? "By Liters" : "By Pesos";
+
+    if(mode === "liters") {
+        toggleBtn.classList.remove("text-white", "bg-[#1A2F58]");
+        toggleBtn.classList.add("text-[#1A2F58]", "bg-[#F3F7FF]");
+    } else {
+        toggleBtn.classList.remove("text-[#1A2F58]", "bg-[#F3F7FF]");
+        toggleBtn.classList.add("text-white", "bg-[#1A2F58]");
+    }
+
+    // Reset input and output when mode changes
+    fuelinput.value = "";
+    fuelvalue.textContent = "₱ 0.00";
+});
+  
+  // Update toggle button text & style
+  toggleBtn.textContent = mode === "liters" ? "By Liters" : "By Pesos";
+  
+  if(mode === "liters") {
+    toggleBtn.classList.remove("text-white", "bg-[#1A2F58]");
+    toggleBtn.classList.add("text-[#1A2F58]", "bg-[#F3F7FF]");
+  } else {
+    toggleBtn.classList.remove("text-[#1A2F58]", "bg-[#F3F7FF]");
+    toggleBtn.classList.add("text-white", "bg-[#1A2F58]");
+  }
+  const addOrder = document.getElementById('addFuel');
+  fuel_amt = fuelvalue;
+  addOrder.addEventListener("click", () => {
+        addProduct('fuel',fuel_id);
+    
+  });
+
+  const savebtn = document.getElementById('save-btn');
+  savebtn.addEventListener("click", () => {
+    savebtn.disabled = true;
+    saveTransaction();
+    cart = {};          // empty the cart
+    renderCart();       // refresh the table
+    updateSummary();  
+    selectedFuel = null;
+
+  });
 }
 
-function clearDenominations() {
-    selectedAmount = 0;
-    selectedLiters = 0;
 
-    if (phButtons) phButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-    if (literButtons) literButtons.forEach(b => b.classList.remove("bg-[#1A2F58]", "text-white"));
-
-    if (customInput) customInput.value = "";
-}
+const totaldb = null;
 
 function updateSummary() {
     let subtotal = 0;
 
-    for (let productId in cart) {
-        const qty = cart[productId];
-        const product = products_array.find(p => Number(p.product_id) === Number(productId));
-        if (!product) continue;
+    for (let key in cart) {
+        const item = cart[key];
 
-        subtotal += Number(product.price) * qty;
+        if (typeof item === "number") {
+            // Product
+            const productId = Number(key);
+            const product = products_array.find(p => Number(p.product_id) === productId);
+            if (!product) continue;
+
+            subtotal += Number(product.price) * item;
+
+        } else if (typeof item === "object") {
+            // Fuel
+            subtotal += Number(item.pesos);
+        }
     }
 
-    // VAT 12%
-    const vat = subtotal * 0.12;
+    // Total already includes VAT
+    const total = subtotal; // stays as const
+    const totalToUse = totaldb !== null ? totaldb : total;
 
-    // Total
-    const total = subtotal + vat;
-
-    // format numbers with commas and 2 decimals
-    const subtotalFormatted = subtotal.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+    // Format numbers
+    const vat = totalToUse - totalToUse / 1.12;
+    const subtotalFormatted = (totalToUse - vat).toLocaleString('en-PH', { minimumFractionDigits: 2 });
     const vatFormatted = vat.toLocaleString('en-PH', { minimumFractionDigits: 2 });
-    const totalFormatted = total.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+    const totalFormatted = totalToUse.toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
-    // update HTML
     document.getElementById("summary-subtotal").textContent = `₱${subtotalFormatted}`;
     document.getElementById("summary-vat").textContent = `₱${vatFormatted}`;
     document.getElementById("summary-total").textContent = `₱${totalFormatted}`;
 }
+
+function saveTransaction() {
+  
+
+  if (!cart || Object.keys(cart).length === 0) {
+    alert('Cannot Save a Transaction if the Order is Empty.');
+    return;
+  }
+  else {
+  const paymentMethod = document.querySelector('#payment-method').value;  
+  fetch('../config/transaction.php?action=saveTransaction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        cart: cart,
+        total: totaldb,
+        payment_method: paymentMethod
+    })
+})
+.then(res => res.json())
+.then(data => {
+    if(data.status === 'success') {
+showSnackbar('Transaction Saved Successfully', 'success')
+closeform();
+    } else {
+        alert('Error: ' + data.message);
+    }
+});
+}}

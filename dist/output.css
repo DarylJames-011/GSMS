@@ -1258,10 +1258,6 @@ video {
   resize: none;
 }
 
-.auto-rows-\[7rem\] {
-  grid-auto-rows: 7rem;
-}
-
 .auto-rows-\[8rem\] {
   grid-auto-rows: 8rem;
 }
@@ -1410,6 +1406,10 @@ video {
 
 .overflow-y-hidden {
   overflow-y: hidden;
+}
+
+.whitespace-nowrap {
+  white-space: nowrap;
 }
 
 .break-words {
@@ -1984,6 +1984,16 @@ video {
 .bg-yellow-500 {
   --tw-bg-opacity: 1;
   background-color: rgb(234 179 8 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[\#ff2d2d\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(255 45 45 / var(--tw-bg-opacity, 1));
+}
+
+.bg-\[\#fc1919\] {
+  --tw-bg-opacity: 1;
+  background-color: rgb(252 25 25 / var(--tw-bg-opacity, 1));
 }
 
 .bg-gradient-to-b {
@@ -2838,6 +2848,11 @@ video {
   background-color: rgb(226 232 240 / var(--tw-bg-opacity, 1));
 }
 
+.hover\:bg-\[\#223B6E\]:hover {
+  --tw-bg-opacity: 1;
+  background-color: rgb(34 59 110 / var(--tw-bg-opacity, 1));
+}
+
 .hover\:bg-\[\#284379\]:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(40 67 121 / var(--tw-bg-opacity, 1));
@@ -2893,9 +2908,9 @@ video {
   background-color: rgb(203 213 225 / var(--tw-bg-opacity, 1));
 }
 
-.hover\:bg-\[\#223B6E\]:hover {
+.hover\:bg-\[\#ff6363\]:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(34 59 110 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 99 99 / var(--tw-bg-opacity, 1));
 }
 
 .hover\:text-slate-900:hover {

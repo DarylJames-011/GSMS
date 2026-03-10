@@ -136,7 +136,7 @@ function closePanel() {
 
   overlay.addEventListener("click", closeModal);
 
-  function showSnackbar(message, type = "info", duration = 3000) {
+ function showSnackbar(message, type = "info", duration = 3000) {
     const snackbar = document.getElementById("snackbar");
 
     // Set text

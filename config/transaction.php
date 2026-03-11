@@ -79,21 +79,21 @@ if ($action === 'saveTransaction') {
     $conn->begin_transaction();
 
     try {
-        // 1️⃣ Insert transaction
+        // 1️ Insert transaction
         $stmt = $conn->prepare("INSERT INTO transaction_tbl (user_id, date_created, total_amt, payment_method) VALUES (?, NOW(), ?, ?)");
         $stmt->bind_param("ids", $user_id, $total_amount, $payment_method);
         $stmt->execute();
         $transaction_id = $stmt->insert_id;
         $stmt->close();
 
-        // 2️⃣ Generate transaction_no
+        //  Generate transaction_no
         $transaction_no = 'TRNS-' . str_pad($transaction_id, 3, '0', STR_PAD_LEFT);
         $update = $conn->prepare("UPDATE transaction_tbl SET transaction_no = ? WHERE transaction_id = ?");
         $update->bind_param("si", $transaction_no, $transaction_id);
         $update->execute();
         $update->close();
 
-        // 3️⃣ Insert each cart item
+        // Insert each cart item
         $stmt = $conn->prepare("INSERT INTO transaction_items (transaction_id, product_type, product_id, quantity, price, subtotal) VALUES (?, ?, ?, ?, ?, ?)");
 
         foreach ($cart as $id => $item) {
@@ -134,6 +134,21 @@ if ($action === 'saveTransaction') {
     }
 }
 
+if ($action === 'getTransaction') {
 
+    $sql = "SELECT transaction_no, payment_method, total_amt, date_created FROM transaction_tbl";
+    $result = $conn->query($sql);
 
+    $transactions = [];
+
+    while ($row = $result->fetch_assoc()) {
+
+        // convert YYYY-MM-DD HH:MM:SS → DD/MM/YYYY
+        $row['date_created'] = date("d/m/Y", strtotime($row['date_created']));
+
+        $transactions[] = $row;
+    }
+
+    echo json_encode($transactions);
+}
 ?>

@@ -277,7 +277,7 @@ border border-[#1A2F58]/50 h-full p-2">
 <template>  
 </template>
 
-<div class="fixed w-screen h-screen flex flex-row items-center justify-center z-50">
+<div class="fixed w-screen h-screen flex flex-row items-center justify-center z-50 hidden">
     <div class="bg-white h-[65%] w-[50%] border border-[#1A2F58]/20 shadow-lg rounded
     flex flex-col p-2 text-[#1A2F58] font-inter">
     <div class="flex flex-row justify-between items-center py-1 mb-1">

@@ -552,10 +552,98 @@ function saveTransaction() {
 .then(res => res.json())
 .then(data => {
     if(data.status === 'success') {
-showSnackbar('Transaction Saved Successfully', 'success')
+showSnackbar('Transaction Saved Successfully', 'success');
+fetchTranasction();
 closeform();
     } else {
         alert('Error: ' + data.message);
     }
 });
 }}
+
+
+
+function fetchTranasction() {
+      fetch("../config/transaction.php?action=getTransaction")
+    .then(response => response.json())
+    .then(data => {
+
+        const container = document.getElementById("transactionContainer");
+
+        container.innerHTML = "";
+
+       data.forEach(transaction => {
+
+    const formattedTotal = Number(transaction.total_amt).toLocaleString('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    });
+
+    const card = `
+    <div class="transaction-card w-full p-3 flex flex-row gap-2 rounded-lg hover:bg-[#EBEBEB] transition-colors"
+    data-transaction="${transaction.transaction_no}">
+        <img src="../assets/Check1.png">
+
+        <div class="flex flex-col gap-3 justify-between w-full">
+
+            <div class="flex flex-row justify-between">
+                <button class="font-semibold">
+                    <u>${transaction.transaction_no}</u>
+                </button>
+                <span>${transaction.date_created}</span>
+            </div>
+
+            <div class="flex flex-row justify-between">
+                <span>${transaction.payment_method}</span>
+                <span>${formattedTotal}</span>
+            </div>
+
+        </div>
+    </div>
+    `;
+
+    container.innerHTML += card;
+});
+
+    });
+    
+}
+
+function searchTransaction() {
+ document.getElementById("searchTransaction").addEventListener("input", function () {
+
+    const searchValue = this.value.toLowerCase();
+    const container = document.getElementById("transactionContainer");
+    const cards = container.querySelectorAll(".transaction-card");
+    let anyVisible = false;
+
+    cards.forEach(card => {
+        const transactionNo = card.dataset.transaction.toLowerCase();
+
+        if (transactionNo.includes(searchValue)) {
+            card.style.display = "flex";
+            anyVisible = true;
+        } else {
+            card.style.display = "none";
+        }
+    });
+
+    // Remove previous no results message if exists
+    const existingMsg = container.querySelector(".no-results");
+    if (existingMsg) existingMsg.remove();
+
+    // Add message if nothing is visible
+    if (!anyVisible) {
+        const msg = document.createElement("div");
+        msg.className = "no-results text-center text-gray-500 p-3";
+        msg.textContent = "No transaction found.";
+        container.appendChild(msg);
+    }
+
+});
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+    fetchTranasction();
+    searchTransaction();
+});

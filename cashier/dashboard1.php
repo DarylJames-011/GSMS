@@ -249,7 +249,7 @@ transform translate-x-full transition-transform duration-300 ease-in-out delay-2
 
                         </button>
                         <button class="w-[238px] h-[136px] bg-[#D4FFE1] border border-[#459A5F] rounded-[10px] shadow-[0_13px_20px_1px_rgba(0,93,29,0.45)]
-                        items-center flex flex-row pl-2 justify-between" onclick="overlays()">
+                        items-center flex flex-row pl-2 justify-between" onclick="alert('Most of your Products are at a sufficient level')">
                             <div class="flex flex-col">
                                 <p class="text-base font-inter font-bold text-[#33814B] text-left pb-2">Quick <br> Monitoring</p>
                                 <p class="text-[13px] font-inter font-medium text-[#53A36C] text-left">No restock needed <br>at the moment.<br>You’re all set!</p> 

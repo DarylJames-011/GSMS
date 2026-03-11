@@ -431,7 +431,7 @@ $user_id = $_SESSION['user_id'];
         <span class="text-lg text-[#1A2F58] font-bold">Transaction History</span>
             <div class="flex flex-row gap-3"> 
                       <div class="relative">
-                      <input type="text" placeholder="Search..." class="w-full p-1 border border-[#1F3A69] font-inter font-normal rounded-[3px]">
+                      <input id="searchTransaction" type="text" placeholder="Search..." class="w-full p-1 border border-[#1F3A69] font-inter font-normal rounded-[3px]">
                       <i class="fa-solid fa-magnifying-glass absolute right-2 bottom-2 opacity-50"></i>
             </div>
       </div>
@@ -442,12 +442,29 @@ $user_id = $_SESSION['user_id'];
         <button class="rounded-full border-2 px-4 shadow-md py-1 shadow-black/20 border-[#1A2F58]">Yesterday</button>
         <button class="rounded-full border-2 px-4 shadow-md py-1 shadow-black/20 border-[#1A2F58]">Last Week</button>      
         <button class="rounded-full border-2 px-4 shadow-md py-1 shadow-black/20 border-[#1A2F58]">Last Week</button>
-        <button class="rounded-full bg-[#1A2F58] text-white border-2 px-4 shadow-md shadow-black/20 border-[#1A2F58]">Active</button>
+<!--  <button class="rounded-full bg-[#1A2F58] text-white border-2 px-4 shadow-md shadow-black/20 border-[#1A2F58]">Active</button> -->
       </div>
-      <div class="flex flex-col border-t h-3/4 border-b border-[#1A2F58]/50">
-        <div></div>
-      </div>
+      <div id="transactionContainer" class="h-3/4 max-h-[75%] flex flex-col font-inter text-sm text-[#1A2F58] border-t overflow-y-auto border-b border-[#1A2F58]/50 divide-y divide-[#1A2F58]/20">
+        <div class="w-full p-3 flex flex-row gap-2 rounded-lg hover:bg-[#EBEBEB] transition-colors">
+          <img src="../assets/Check1.png">
+            <div class="flex flex-col gap-3 justify-between w-full">
+            <div class="flex flex-row justify-between">
+              <button class="font-semibold"><u>Transaction Number</u></button>
+              <span>Placeholder Date</span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span>Payment Method</span>
+              <span>Total Placeholder</span>
+             
+            </div>
+          </div>
+          
+        </div>
+
     </div>
+      <div id="noResults" class="text-center text-gray-500 mt-3 hidden">
+        No transaction found.
+      </div>
     </div>
 
     </main>

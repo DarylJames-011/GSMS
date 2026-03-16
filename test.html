@@ -1,80 +1,128 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Table Test</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt Test</title>
+<style>
+  /* Make receipt off-screen but still renderable */
+  #receipt {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    background: white;
+    padding: 4mm;
+    font-family: monospace;
+    font-size: 12px;
+    box-sizing: border-box;
+    width: 80mm; /* typical thermal width */
+  }
+
+  /* Print styling */
+  @media print {
+    body * {
+      visibility: hidden;
+    }
+
+    #receipt, #receipt * {
+      visibility: visible;
+    }
+
+    #receipt {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 80mm;
+      font-family: monospace;
+      font-size: 12px;
+      padding: 2mm;
+      box-sizing: border-box;
+    }
+
+    #receipt table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    #receipt td, #receipt th {
+      padding: 1px 0;
+      word-wrap: break-word;
+      text-align: left;
+    }
+
+    hr {
+      border: none;
+      border-top: 1px dashed black;
+      margin: 2px 0;
+    }
+  }
+
+  /* Button styling */
+  #printBtn {
+    padding: 6px 12px;
+    background: #ec4899; /* Tailwind pink-500 */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+</style>
 </head>
+<body>
 
-<body class="bg-slate-200 min-h-screen flex items-center justify-center p-10">
-
-  <div class="w-full max-w-5xl bg-slate-100 rounded-xl shadow-lg overflow-hidden border border-slate-300">
-
-    <!-- Title Section -->
-    <div class="px-6 py-4 bg-slate-300 border-b border-slate-400">
-      <h2 class="text-lg font-semibold text-slate-800">Purchase History</h2>
-      <p class="text-sm text-slate-600">Recent transactions</p>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="w-full text-left border-collapse">
-
-        <!-- Table Head -->
-        <thead class="bg-slate-400 text-slate-900 text-sm uppercase tracking-wide">
-          <tr>
-            <th class="px-6 py-4">Date</th>
-            <th class="px-6 py-4">Product</th>
-            <th class="px-6 py-4">Quantity</th>
-            <th class="px-6 py-4">Price</th>
-            <th class="px-6 py-4">Receipt</th>
-          </tr>
-        </thead>
-
-        <!-- Table Body -->
-        <tbody class="text-slate-800">
-
-          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
-            <td class="px-6 py-4">01/21/24</td>
-            <td class="px-6 py-4 font-medium">Lubricant</td>
-            <td class="px-6 py-4">2</td>
-            <td class="px-6 py-4">$15.00</td>
-            <td class="px-6 py-4">
-              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
-                View
-              </a>
-            </td>
-          </tr>
-
-          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
-            <td class="px-6 py-4">01/22/24</td>
-            <td class="px-6 py-4 font-medium">Lubricant</td>
-            <td class="px-6 py-4">2</td>
-            <td class="px-6 py-4">$15.00</td>
-            <td class="px-6 py-4">
-              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
-                View
-              </a>
-            </td>
-          </tr>
-
-          <tr class="even:bg-slate-200 hover:bg-slate-300 transition">
-            <td class="px-6 py-4">01/23/24</td>
-            <td class="px-6 py-4 font-medium">Lubricant</td>
-            <td class="px-6 py-4">2</td>
-            <td class="px-6 py-4">$15.00</td>
-            <td class="px-6 py-4">
-              <a href="#" class="text-slate-700 underline hover:text-slate-900 transition">
-                View
-              </a>
-            </td>
-          </tr>
-
-        </tbody>
-      </table>
-    </div>
-
+<!-- Hidden receipt -->
+<div id="receipt">
+  <div style="text-align:center;">
+    <h2 style="margin:0;">My POS Store</h2>
+    <p style="margin:0;">123 Main St, City</p>
+    <p style="margin:0;">Tel: 0912-345-6789</p>
+    <hr>
   </div>
+
+  <p style="margin:0;">Transaction No: 00123</p>
+  <p style="margin:0;">Date: 2026-03-14 10:15 AM</p>
+  <hr>
+
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50%;">Item</th>
+        <th style="width:25%;">Qty</th>
+        <th style="width:25%; text-align:right;">Price</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fries</td>
+        <td>2</td>
+        <td style="text-align:right;">50</td>
+      </tr>
+      <tr>
+        <td>Burger</td>
+        <td>1</td>
+        <td style="text-align:right;">70</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <hr>
+  <p style="text-align:right; margin:0;"><strong>Total: 120</strong></p>
+
+  <div style="text-align:center; margin-top:4px;">
+    <p style="margin:0;">Thank you for your purchase!</p>
+    <p style="margin:0;">Visit Again :)</p>
+  </div>
+</div>
+
+<!-- Print button -->
+<button id="printBtn">Print Receipt</button>
+
+<script>
+document.getElementById("printBtn").addEventListener("click", () => {
+    window.print();
+});
+</script>
 
 </body>
 </html>

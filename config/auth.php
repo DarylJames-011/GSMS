@@ -25,5 +25,14 @@ if (!isset($_SESSION['role'])) {
     }
 
     $_SESSION['role'] = $user_data['role'];
-}
+
+    
+}   
+
+
+$user_id = $_SESSION['user_id'];
+$stmt = $conn->prepare("SELECT * FROM shifts WHERE user_id = ? AND status='active' ORDER BY shift_start DESC LIMIT 1");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$result = $stmt->get_result();
 ?>

@@ -1,140 +1,130 @@
-  const modal = document.getElementById("modal");
-  const overlay = document.getElementById("overlay");
-  const modalContent = document.getElementById("modalContent");
-  const btnYes = document.getElementById("modalConfirm");
-  const btnNo = document.getElementById("modalcancel");
 
-    function updateDateTime() {
-    const now = new Date();
-
-    const date = now.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-
-    const time = now.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-
-    document.getElementById("time").textContent = `${time}`;
-    document.getElementById("date").textContent = `${date}`;
-  }
-
-  updateDateTime();
-  setInterval(updateDateTime, 1000);
+const modal = document.getElementById("modal");
+const modalWrapper = document.getElementById('wrapper');
+const modalOverlay = document.getElementById('overlay');
+const modalContent = document.getElementById("modalContent");
+const start_btn = document.getElementById("start-btn");
+let shiftStart = null;
+document.addEventListener("DOMContentLoaded", function () {
+    fetchTranasction();
+    updateShiftCards();
+});
 
 
-  function openModal(
-    title,
-    message,
-    confirmCallback,
-    confirmColor = "#FF7979",
-    noColor = "#1A2F58",
-    confirmBorderColor = null,
-    noBorderColor = null
-  ) {
-    // Set text
-    document.getElementById("title").textContent = title;
-    document.getElementById("desc").textContent = message;
+const transactionBtn = document.getElementById('trans-btn');
 
-    // Set button colors
-    btnYes.style.backgroundColor = confirmColor;
-    btnYes.style.borderColor = confirmBorderColor || confirmColor;
-
-    btnNo.style.backgroundColor = noColor;
-    btnNo.style.borderColor = noBorderColor || noColor;
-
-    // Set button actions
-    btnYes.onclick = () => {
-      confirmCallback();
-      closeModal();
-    };
-
-    btnNo.onclick = closeModal;
-
-    // Show modal
-    modal.classList.remove("opacity-0", "invisible", "pointer-events-none");
-    modal.classList.add("opacity-100");
-
-    overlay.classList.remove("opacity-0", "invisible");
-    overlay.classList.add("opacity-100");
-
-    modalContent.classList.remove("opacity-0", "scale-95");
-    modalContent.classList.add("opacity-100", "scale-100");
-  }
-
-  function overlays() {
-    modal.classList.remove("opacity-0", "invisible", "pointer-events-none");
-    modal.classList.add("opacity-100");
-
-    overlay.classList.remove("opacity-0", "invisible");
-    overlay.classList.add("opacity-100");
-
-      overlay.addEventListener("click", overlayclose);
-  }
-
-
-   const panel = document.getElementById('shiftPanel');
-
- function openPanel() {
-
-  setTimeout(() => {
-    overlays();
-  }, 500);
-
-  setTimeout(() => {
-    panel.classList.remove("translate-x-full");
-    panel.classList.add("translate-x-0");
-  }, 400);
-
+transactionBtn.onclick = () => {
+ if (shiftStart) {
+ openModal1('addtrans');
+ populate();
+} else {
+ openModal1('shifterror');
+}
 }
 
-function closePanel() {
-  overlayclose();
-  panel.style.transitionDelay = "100ms"; // no delay for closing
-  panel.classList.remove("translate-x-0");
-  panel.classList.add("translate-x-full");
+start_btn.onclick = () => {
+    if (start_btn.dataset.shiftActive === 'true') {
+        // Shift is active → end shift
+        openModal1('end-sh'); // optional: open an end shift modal
+        document.getElementById('go-end').onclick = () => {
+            endShift(); // call your endShift function
+        }
+    } else {
+        // Shift not active → start shift
+        openModal1('start-sh'); // open start shift modal
+        document.getElementById('go-sh').onclick = () => {
+            startShift(); // call your startShift function
+        }
+    }
+}
+function openModal1(templateId) {
+  const template = document.getElementById(templateId);
+
+  modalContent.innerHTML = "";
+  modalContent.appendChild(template.content.cloneNode(true));
+
+  // Show wrapper and overlay immediately
+  modalWrapper.classList.remove('opacity-0', 'pointer-events-none');
+  modalOverlay.classList.remove('opacity-0', 'pointer-events-none');
+
+  // Animate modalContent appearance
+  requestAnimationFrame(() => {
+    modalContent.classList.remove('opacity-0', 'translate-y-5');
+  });
+}
+
+async function endShift() {
+    try {
+        const response = await fetch('../config/end_shift.php', {
+            method: 'POST',
+            credentials: 'include', // important for session
+        });
+
+        const data = await response.json();
+
+        if (response.ok && !data.error) {
+            
+            shiftStart = null; // no active shift
+            updateShiftIndicator(null); // update button and status
+            updateShiftCards();
+            showSnackbar('Shift has been ended', 'success');
+            closeform();
+        } else {
+            console.error(data.error);
+            alert('Error ending shift: ' + (data.error || 'Unknown'));
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function fetchShift() {
+    try {
+        const response = await fetch('../config/active_shift.php', { credentials: 'include' });
+        const data = await response.json();
+        shiftStart = data.shift_start; // update global variable
+        updateShiftIndicator(shiftStart);
+
+
+
+
+    } catch (err) {
+        console.error('Error fetching shift:', err);
+    }
+    
 }
 
 
-  function overlayclose() {
-    modal.classList.remove("opacity-100");
-    modal.classList.add("opacity-0");
+fetchShift();
 
-    overlay.classList.remove("opacity-100");
-    overlay.classList.add("opacity-0");
-   
-     setTimeout(() => {
-      modal.classList.add("invisible", "pointer-events-none");
-      overlay.classList.add("invisible");
-    }, 300);
 
-  }
+const panel = document.getElementById('notifPanel');
+const overlay = document.getElementById('notifOverlay');
 
-  function closeModal() { 
+function openNotifications() {
+  panel.classList.remove('translate-x-full', 'opacity-0', 'pointer-events-none');
+  panel.classList.add('translate-x-0', 'opacity-100', 'pointer-events-auto');
 
-  panel.style.transitionDelay = "100ms"; // no delay for closing
-  panel.classList.remove("translate-x-0");
-  panel.classList.add("translate-x-full");
+  overlay.classList.remove('opacity-0', 'pointer-events-none');
+  overlay.classList.add('opacity-100', 'pointer-events-auto');
+}
 
-    modal.classList.remove("opacity-100");
-    modal.classList.add("opacity-0");
+function closeNotifications() {
+  panel.classList.add('translate-x-full', 'opacity-0', 'pointer-events-none');
+  panel.classList.remove('translate-x-0', 'opacity-100', 'pointer-events-auto');
 
-    overlay.classList.remove("opacity-100");
-    overlay.classList.add("opacity-0");
+  overlay.classList.add('opacity-0', 'pointer-events-none');
+  overlay.classList.remove('opacity-100', 'pointer-events-auto');
+}
 
-    modalContent.classList.remove("opacity-100", "scale-100");
-    modalContent.classList.add("opacity-0", "scale-95");
+// Optional: click outside panel to close
+overlay.addEventListener('click', closeNotifications);
 
-    setTimeout(() => {
-      modal.classList.add("invisible", "pointer-events-none");
-      overlay.classList.add("invisible");
-    }, 300);
-  }
 
-  overlay.addEventListener("click", closeModal);
+
+
+setInterval(fetchShift, 10000);
+
 
  function showSnackbar(message, type = "info", duration = 3000) {
     const snackbar = document.getElementById("snackbar");
@@ -159,324 +149,1132 @@ function closePanel() {
     }, duration);
 }
 
- Chart.defaults.font.family = "'Inter', sans-serif";
-  Chart.defaults.font.size = 10;
-
-  const ctx = document.getElementById('line');
-
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [
-        {
-          label: 'This Week',
-          data: [120, 150, 90, 180, 160, 200, 220],
-          borderColor: '#1F3A69',
-          backgroundColor: 'rgba(59, 130, 246, 0.2)',
-          tension: 0.3,
-          fill: true,
-          pointRadius: 4
-        },
-        {
-          label: 'Last Week',
-          data: [100, 140, 110, 170, 150, 190, 210],
-          borderColor: '#ad0741',
-          backgroundColor: 'rgba(184, 22, 79, 0.2)',
-          tension: 0.3,
-          fill: true,
-          borderDash: [5, 5],
-          pointRadius: 4
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          labels: {
-            font: { size: 10 }
-          }
-        },
-        tooltip: {
-          titleFont: { size: 10 },
-          bodyFont: { size: 10 }
-        }
-      },
-      scales: {
-        x: {
-          title: {
-            display: true,
-            text: 'Day of the Week',
-            font: { size: 10 }
-          },
-          ticks: {
-            font: { size: 10 }
-          }
-        },
-        y: {
-          title: {
-            display: true,
-            text: 'Sales ($)',
-            font: { size: 10 }
-          },
-          ticks: {
-            font: { size: 10 },
-            beginAtZero: true
-          }
-        }
-      }
-    }
-  });
+function closeform() { 
+  modalContent.classList.add('opacity-0', 'translate-y-5'); 
+  modalOverlay.classList.add('opacity-0'); 
+  setTimeout(() => { modalWrapper.classList.add('opacity-0', 'pointer-events-none'); 
+    modalContent.innerHTML = ""; }, 500); 
+  }
 
 
-const ctx1 = document.getElementById('trends');
 
-  new Chart(ctx1, {
-    type: 'bar',
-    data: {
-      labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-      datasets: [
-        {
-          label: 'Gasoline',
-          data: [120, 140, 130, 150, 160, 180, 170],
-          backgroundColor: '#3B82F6' // blue
-        },
-        {
-          label: 'Diesel',
-          data: [200, 220, 210, 230, 240, 260, 250],
-          backgroundColor: '#B7CCF0' // amber
-        },
-        {
-          label: 'Lubricants',
-          data: [30, 25, 28, 35, 40, 45, 42],
-          backgroundColor: '#BDE3FF' // green
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: 'bottom',
-          labels: {
-            boxWidth: 12,
-          }
-        },
-        tooltip: {
-          mode: 'index',
-          intersect: false
-        }
-      },
-      scales: {
-        x: {
-          stacked: true,
-          ticks: {
-            font: { size: 10 }
-          }
-        },
-        y: {
-          stacked: true,
-          ticks: {
-            font: { size: 10 },
-            beginAtZero: true
-          }
-        }
-      }
-    }
-  });
+function toggleView() {
+  const child1 = document.getElementById("fueltab");
+  const child2 = document.getElementById("prodtab");
+  const button = document.getElementById('tabtxt');
+  const search = document.getElementById('search');
+  
+  child1.classList.toggle("hidden");
+  child2.classList.toggle("hidden");
 
-let shiftStartTime = null;
-let shiftTimerInterval = null;
+    if (child1.classList.contains("hidden")) {
+    button.innerText = "Add Fuel";
+    search.classList.remove("hidden");
+    
+  } else {
+    button.innerText = "Add Products";
+    search.classList.add("hidden");
+    
+  }
+}
 
-const shiftbutton = document.getElementById('shift_btn');
-const btn_ttl = document.getElementById('shift_ttl');
-const btn_des = document.getElementById('shift_des');
-const clockimg = document.getElementById('clock_img');
-const statusColorEl = document.getElementById('status_color');
-document.addEventListener('DOMContentLoaded', () => {
-    loadActiveShift();
+document.addEventListener("keydown", function(event) {
+  if (event.key === "F1") {
+    event.preventDefault(); // prevent browser help menu
+    toggleView();
+  }
 });
 
-function loadActiveShift() {
-    fetch('../config/active_shift.php', {
-        method: 'GET',
-        credentials: 'include'
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.shift_start) {
-            onShift = true;
-            shiftStartTime = new Date(data.shift_start);
-            updateShiftStatus();
-            // Update every minute
-            shiftTimerInterval = setInterval(updateShiftStatus, 60000);
-            updateButtonUI();
 
-            if (statusColorEl) {
-                statusColorEl.style.backgroundColor = "#32a836"; // overrides Tailwind class
+function populate() {
+  fuelpopulate();
+  fetch("../config/transaction.php?action=getproducts")
+.then(res => res.json())
+.then(products => {
+
+    const container = document.getElementById("prodtab");
+    let html = "";
+    products_array = products;
+    
+    products.forEach(product => {
+    const price = Number(product.price).toFixed(2);
+    const stock = Number(product.stock);
+            let stockColor = '';
+    let buttonDisabled = '';
+    let buttonClasses = 'bg-[#1A2F58] flex justify-center items-center rounded-full w-7 h-7 hover:bg-[#365CA8] transition';
+
+    if (stock === 0) {
+        stockColor = 'text-gray-400'; // Out of stock text
+        buttonDisabled = 'disabled';   // disabl    e button
+        buttonClasses = 'bg-gray-400 flex justify-center items-center rounded-full w-7 h-7 cursor-not-allowed'; // greyed out
+    } else if (product.stock < 12) {
+        stockColor = 'text-red-500'; // low stock text
+    } else {
+        stockColor = ''; // normal
+    } 
+
+        html += `
+        <div class="w-52 p-2 gap-3 items-center h-28 flex flex-row border border-[#1F3A69]/20 shadow-md shadow-black/20">
+          
+          <img src="../config/admin/uploads/products/${product.image}" class="w-20 h-full">
+
+          <div class="flex flex-col font-inter text-[#1A2F58] items-start w-full">
+            <div class="flex flex-col w-full">
+              
+              <span class="font-semibold text-xs max-w-full">${product.product_name}</span>
+              <span class="font-medium text-xs">₱ ${price}</span>
+               <span class="font-medium text-xs ${stockColor}">
+              ${stock === 0 ? 'Out of Stock' : `Stock: ${stock}`}
+              </span>
+
+              <div class="flex items-end justify-end w-full">
+                <button onclick="addProduct('product',${product.product_id})" ${buttonDisabled} class="${buttonClasses}">
+                <i class="fa-solid fa-plus text-xl ${product.stock === 0 ? 'text-white' : 'text-[#F8F8FF]'}"></i>
+               </button>
+
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+        `;
+
+    });
+
+    container.innerHTML = html;
+
+});
+}
+
+let cart = {}; 
+const max_liters = 5000;
+
+document.addEventListener("keydown", (e) => {
+    // e.code is "F3" when F3 is pressed
+    if (e.code === "F3") {
+        e.preventDefault(); // prevent browser default action for F3 (if any)
+        
+
+            cart = {};       // empty the cart
+            renderCart();    // refresh table and summary
+            updateSummary();
+
+    }
+});
+
+function addProduct(type,id) {
+    document.getElementById("clear-cart-btn").addEventListener("click", () => {
+    cart = {};          // empty the cart
+    renderCart();       // refresh the table
+    updateSummary();
+  });
+
+      if (type === "product") {
+
+        const product = products_array.find(p => Number(p.product_id) === Number(id));
+        if (!product) return;
+
+        if ((cart[product.product_id] || 0) >= Number(product.stock)) {
+            alert("Cannot exceed available stock");
+            return;
+        }
+
+        cart[product.product_id] = (cart[product.product_id] || 0) + 1;
+
+    }
+
+    if (type === "fuel") {
+
+        const fuel = fuels_array.find(f => Number(f.fuel_id) === Number(id));
+        if (!fuel) return;
+           const number = parseFloat(
+          fuel_amt.textContent
+              .replace("₱", "")
+              .replace(/,/g, "")
+              .trim()
+      );
+
+        const fuel_ltrs = Math.round((number / selectedprice) * 100) / 100;
+        let totalLitersInCart = 0;
+        for (let key in cart) {
+            const item = cart[key];
+            if (typeof item === "object" && item.liters) {
+                totalLitersInCart += item.liters;
             }
-
-
         }
-    })
-    .catch(err => console.error('Fetch error:', err));
-}
 
-let onShift = false;
+        // check transaction cap
+        if (totalLitersInCart + fuel_ltrs > max_liters) {
+            alert(`Cannot add fuel. Total liters per transaction cannot exceed ${max_liters} L.`);
+            return;
+        }
+          
+       if (cart[fuel.fuel_id]) {
+          // already in cart, increment
+          cart[fuel.fuel_id].pesos += number;
+          cart[fuel.fuel_id].liters += fuel_ltrs;
+      } else {
+          cart[fuel.fuel_id] = {
+              type: fuel.fuel_type,
+              pesos: number,
+              liters: fuel_ltrs
+          };
+      }
 
-function setShiftActiveUI() {
-
-    btn_ttl.textContent = "Shift in Progress...";
-    btn_des.textContent = "Click to end your shift.";
-
-    shiftbutton.style.backgroundColor = "#FFEBB5";
-    shiftbutton.style.borderColor = "#7D7325";
-    shiftbutton.style.boxShadow = "0 13px 20px 1px rgba(172, 172, 68, 0.62)";
-
-    btn_ttl.style.color = "#69691F";
-    btn_des.style.color = "#7D7325";
-
-    clockimg.src = "../assets/clock_activ.png";
-}
-
-function setShiftInactiveUI() {
-
-    btn_ttl.textContent = "Start Shift";
-    btn_des.textContent = "Click to start your shift.";
-
-    shiftbutton.style.backgroundColor = "#BDE3FF";
-    shiftbutton.style.borderColor = "#1E5780";
-    shiftbutton.style.boxShadow = "0 13px 20px 1px rgba(68,129,172,0.62)";
-
-    btn_ttl.style.color = "#1A2F58";
-    btn_des.style.color = "#1E5780";
-
-    statusColorEl.style.backgroundColor = "red"; // overrides Tailwind class
-    document.getElementById('shift_status').textContent = "Shift not started yet";
-
-    clockimg.src = "../assets/clock.png";
-}
-
-function updateButtonUI() {
-    if (onShift) {
-        setShiftActiveUI();
-    } else {
-        setShiftInactiveUI();
     }
+    renderCart();
+
+    
+  }
+function renderCart() {
+
+    const tbody = document.getElementById("cart-body");
+    tbody.innerHTML = ""; // clear previous rows
+
+    for (let key in cart) {
+        const item = cart[key];
+        const tr = document.createElement("tr");
+
+        // Check if the item is a product (number) or fuel (object)
+        if (typeof item === "number") {
+            // Product
+            const productId = Number(key);
+            const product = products_array.find(p => Number(p.product_id) === productId);
+            if (!product) continue;
+
+            const qty = item;
+            const total = Number(product.price) * qty;
+            const unitPriceFormatted = Number(product.price).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            const totalFormatted = total.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+            tr.innerHTML = `
+                <td class="py-2 px-2 font-inter font-semibold">${product.product_name}</td>
+                <td class="py-2 px-2 font-inter font-semibold">₱ ${unitPriceFormatted}</td>
+                <td class="py-2 px-2 font-inter font-semibold">${qty}</td>
+                <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${totalFormatted}</td>
+                <td>
+                    <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
+                            onclick="removeCartItem(${product.product_id})">
+                        <i class="fa-solid fa-minus text-white"></i>
+                    </button>
+                </td>
+            `;
+        } else if (typeof item === "object") {
+            // Fuel
+            tr.innerHTML = `
+                <td class="py-2 px-2 font-inter font-semibold">${item.type} (Fuel)</td>
+                <td class="py-2 px-2 font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td class="py-2 px-2 font-inter font-semibold">${Number(item.liters).toFixed(2)} L L</td>
+                <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
+                <td>
+                    <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
+                            onclick="removeCartItem('${key}')">
+                        <i class="fa-solid fa-minus text-white"></i>
+                    </button>
+                </td>
+            `;
+        }
+
+        tbody.appendChild(tr);
+    }
+
+    updateSummary();
 }
 
-shiftbutton.addEventListener("click", function () {
+function removeCartItem(key) {
+    if (!cart[key]) return;
 
-    if (!onShift) {
-        // Start Shift modal colors
-        openModal(
-            "Start Shift",
-            "Are you sure you want to start your shift?",
-            async () => {
-                startShift();
-                onShift = true;
-                updateButtonUI();
-                showSnackbar("Shift Started", "success");
-            },
-            '#1A2F58',    
-            '#FF7979',  
-            '#1A2F58',   
-            '#A00000'
-        );
-
-    } else {
-        // End Shift modal colors
-        openModal(
-            "End Shift",
-            "Are you sure you want to end your shift?",
-            async () => {
-                endShift();
-            },
-           '#FF7979' , '#1A2F58', '#A00000', '#1A2F58'   // hover color
-        );
+    if (typeof cart[key] === "number") {
+        // Product
+        cart[key]--;
+        if (cart[key] <= 0) delete cart[key];
+    } else if (typeof cart[key] === "object") {
+        // Fuel
+        delete cart[key];
     }
+
+    renderCart();
+}
+
+let products_array = [];  
+let fuel_amt = null;
+let fuel_id = null;
+let fuels_array = []; //list of fuels
+let selectedFuel = null; // the fuel currently selected
+let selectedprice = null;
+
+
+function fuelpopulate() {
+ fetch("../config/transaction.php?action=getfuel")
+  .then(res => res.json())
+  .then(fuels => {
+      fuels_array = fuels;
+      // Loop through each fuel and populate the corresponding button
+      fuels.forEach((fuel, index) => {
+          let statusColor = '';
+          let statusLabel = '';
+
+          if (fuel.stock_liters === 0) {
+              statusColor = 'bg-red-500';
+              statusLabel = 'Out of Stock';
+          } else if (fuel.stock_liters < 50) {   // warning threshold
+              statusColor = 'bg-yellow-500';
+              statusLabel = 'Low Stock';
+          } else {
+              statusColor = 'bg-green-500';
+              statusLabel = 'Sufficient Stock';
+          }
+
+          const btn = document.getElementById(`fuel-${index+1}`);
+          if (!btn) return;
+
+          btn.innerHTML = `
+              <div class="flex flex-col w-full h-auto text-left">
+                  <span class="font-bold text-base">${fuel.fuel_type}</span>
+                  <span class="font-medium text-sm">₱ ${Number(fuel.price_per_ltr).toFixed(2)} per Liter</span>
+              </div>
+              <div class="flex flex-row gap-3 items-center text-xs">
+                 <div class="w-2 h-2 ${statusColor} rounded-full"></div>
+                  <span>${statusLabel}</span>
+
+              </div>
+          `;
+          btn.onclick = () => selectFuel(index);
+      });
+       initializefuel();
+  })
+  .catch(err => console.error(err));   
+}
+function selectFuel(index) {
+    const fuel = fuels_array[index];
+    selectedFuel = fuels_array[index];
+    if (!fuel || Number(fuel.stock_liters) === 0) return; // cannot select out-of-stock fuel
+    fuel_id = Number(fuel.fuel_id);
+    // Update your selected fuel panel
+    document.getElementById("fuel-name").textContent = fuel.fuel_type;
+    selectedprice = Number(fuel.price_per_ltr).toFixed(2);
+    fuelcapacity = fuel.stock_ltrs;
+    capacity = fuelcapacity;
+    document.getElementById("fuel-price").textContent = `₱ ${Number(fuel.price_per_ltr).toFixed(2)}`;
+    
+
+}
+
+let mode = "liters"; 
+function initializefuel() {
+    function resetButtons() {
+    buttons.forEach(b => {
+        b.classList.remove("bg-[#1A2F58]", "text-white");
+        b.classList.add("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]", "transition", "duration-200");
+    });
+        }
+    
+const toggleBtn = document.getElementById("toggle-btn");
+const fuelinput = document.getElementById("custom-input");
+const fuelvalue = document.getElementById("fuel-total-amount");
+const buttons = document.querySelectorAll(".deno-btn");
+
+buttons.forEach(btn => {
+  btn.addEventListener("click", () => {
+     if (selectedFuel === null) {
+        alert("Please select fuel type first");
+        return;
+    }
+
+
+    // remove active state from all buttons
+    buttons.forEach(b => {
+      b.classList.remove("bg-[#1A2F58]", "text-white");
+      b.classList.add("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]","transition","duration-200");
+      selectedValue = Number(btn.dataset.value);
+      
+      const formatted = selectedValue.toLocaleString("en-PH", {
+      style: "currency",
+      currency: "PHP"
+    });
+         if (btn.closest("#deno-ph")) {
+           fuelinput.value = "";
+           fuelvalue.textContent = formatted;      
+        }
+
+        if (btn.closest("#deno-l")) {
+            fuelinput.value = "";
+            const total = selectedValue * selectedprice;
+         const formattedTotal = total.toLocaleString("en-PH", {
+            style: "currency",
+            currency: "PHP"
+        });
+            fuelvalue.textContent = formattedTotal;
+        }    
+        
+    });
+
+    
+    // activate clicked button
+    btn.classList.remove("bg-[#F3F7FF]", "hover:bg-[#b3bfd8]","transition","duration-200");
+    btn.classList.add("bg-[#1A2F58]", "text-white");
+  });
+});
+
+ mode = mode === "liters" ? "pesos" : "liters";
+
+  fuelinput.addEventListener("input", () => {
+    if (!selectedFuel) {
+      fuelinput.value = "";
+        alert("Please select fuel type first");      
+        return;
+    }
+    resetButtons();
+
+  const value = Number(fuelinput.value); // get numeric value
+  if(isNaN(value) || value <= 0) {
+    fuelvalue.textContent = "₱ 0.00"; // reset if empty/invalid
+    return;
+  }
+
+  if(mode === "liters") {
+    // User typed liters → calculate price
+    const total = value * selectedprice;
+    fuelvalue.textContent = total.toLocaleString("en-PH", { style: "currency", currency: "PHP" });
+  }
+
+  if(mode === "pesos") {
+    // User typed amount → calculate liters
+    const liters = value;
+    fuelvalue.textContent = liters.toLocaleString("en-PH", { style: "currency", currency: "PHP" });
+  }
 
 });
 
-async function endShift() {
+toggleBtn.addEventListener("click", () => {
+    mode = mode === "liters" ? "pesos" : "liters";
+
+    // Update button text & style
+    toggleBtn.textContent = mode === "liters" ? "By Liters" : "By Pesos";
+
+    if(mode === "liters") {
+        toggleBtn.classList.remove("text-white", "bg-[#1A2F58]");
+        toggleBtn.classList.add("text-[#1A2F58]", "bg-[#F3F7FF]");
+    } else {
+        toggleBtn.classList.remove("text-[#1A2F58]", "bg-[#F3F7FF]");
+        toggleBtn.classList.add("text-white", "bg-[#1A2F58]");
+    }
+
+    // Reset input and output when mode changes
+    fuelinput.value = "";
+    fuelvalue.textContent = "₱ 0.00";
+});
+  
+  // Update toggle button text & style
+  toggleBtn.textContent = mode === "liters" ? "By Liters" : "By Pesos";
+  
+  if(mode === "liters") {
+    toggleBtn.classList.remove("text-white", "bg-[#1A2F58]");
+    toggleBtn.classList.add("text-[#1A2F58]", "bg-[#F3F7FF]");
+  } else {
+    toggleBtn.classList.remove("text-[#1A2F58]", "bg-[#F3F7FF]");
+    toggleBtn.classList.add("text-white", "bg-[#1A2F58]");
+  }
+  const addOrder = document.getElementById('addFuel');
+  fuel_amt = fuelvalue;
+  addOrder.addEventListener("click", () => {
+        addProduct('fuel',fuel_id);
+    
+  });
+
+  const savebtn = document.getElementById('save-btn');
+  savebtn.addEventListener("click", () => {
+    if (Object.keys(cart).length === 0) {
+        alert('Please Add an Order before Proceeding');
+    }
+
+    else {
+        confirmPayment();
+    }
+    
+
+
+  });
+}
+const totaldb = null;
+let subtotal1 = null;
+let ref1 = null;
+
+
+
+function updateSummary() {
+    let subtotal = 0;
+
+    for (let key in cart) {
+        const item = cart[key];
+
+        if (typeof item === "number") {
+            // Product
+            const productId = Number(key);
+            const product = products_array.find(p => Number(p.product_id) === productId);
+            if (!product) continue;
+
+            subtotal += Number(product.price) * item;
+
+        } else if (typeof item === "object") {
+            // Fuel
+            subtotal += Number(item.pesos);
+        }
+    }
+
+    // Total already includes VAT
+    const total = subtotal; // stays as const
+    subtotal1 = subtotal;
+    const totalToUse = totaldb !== null ? totaldb : total;
+
+    // Format numbers
+    const vat = totalToUse - totalToUse / 1.12;
+    const subtotalFormatted = (totalToUse - vat).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+    const vatFormatted = vat.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+    const totalFormatted = totalToUse.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+
+    document.getElementById("summary-subtotal").textContent = `₱${subtotalFormatted}`;
+    document.getElementById("summary-vat").textContent = `₱${vatFormatted}`;
+    document.getElementById("summary-total").textContent = `₱${totalFormatted}`;
+}
+
+function confirmPayment() {
+    const trantab = document.getElementById('maintab');
+    const confirmSection = document.getElementById('confirm');
+    const save = document.getElementById('save-trns');
+    const change = document.getElementById('change');
+    const total_lbl = document.getElementById('totalamt');
+    const input = document.getElementById("amt-rec");
+    const ref = document.getElementById("ref-num");
+    const return_btn = document.getElementById('return');
+    const paymentSelect = document.getElementById('payment-method');
+
+    trantab.classList.add("hidden");
+    confirmSection.classList.remove("hidden");
+
+    let formatted = new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(subtotal1);
+
+    total_lbl.textContent = formatted;
+
+    // RETURN BUTTON
+    return_btn.onclick = () => {
+        trantab.classList.remove("hidden");
+        confirmSection.classList.add("hidden");
+        input.value = "";
+        ref.value = "";
+    };
+
+    // AMOUNT RECEIVED INPUT
+    input.oninput = function () {
+        let inputAmount = Number(input.value) || 0;
+        let finalvalue = inputAmount - subtotal1;
+
+        let formatted = new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(finalvalue);
+
+        if (finalvalue < 0) {
+            change.classList.add("text-[#D03939]");
+        } else {
+            change.classList.remove("text-[#D03939]");
+        }
+
+        change.textContent = formatted;
+    };
+
+    // PAYMENT METHOD TOGGLE
+    function toggleRef() {
+        if (["Credit", "Online"].includes(paymentSelect.value)) {
+            ref.disabled = false;
+            ref.focus();
+            ref.classList.remove("cursor-not-allowed");
+        } else {
+            ref.disabled = true;
+            ref.value = "";
+            ref.classList.add("cursor-not-allowed");
+        }
+    }
+
+    paymentSelect.onchange = toggleRef;
+    toggleRef(); // run immediately
+
+    // SAVE TRANSACTION
+    save.onclick = function () {
+
+        if (["Credit", "Online"].includes(paymentSelect.value) && ref.value === "") {
+            alert('Please add a Reference Number before proceeding.');
+            return;
+        }
+
+        let inputAmount = Number(input.value) || 0;
+
+        if (inputAmount <= 0 || inputAmount < subtotal1) {
+            alert('Insufficient amount. Please enter enough money to cover the total.');
+            return;
+        }
+
+        saveTransaction(ref.value, inputAmount);
+
+
+    };
+
+
+
+}
+function saveTransaction(reference,amount) {
+  
+
+  if (!cart || Object.keys(cart).length === 0) {
+    alert('Cannot Save a Transaction if the Order is Empty.');
+    return;
+  }
+  else {
+  let paymentMethod = document.querySelector('#payment-method').value;  
+  if (!paymentMethod) {
+  paymentMethod = "Cash";
+    }
+
+  fetch('../config/transaction.php?action=saveTransaction', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+        cart: cart,
+        total: subtotal1,
+        payment_method: paymentMethod,
+        reference_num: reference,     // new field
+        amt_received: amount
+    })
+})
+.then(res => res.json())
+.then(data => {
+    if(data.status === 'success') {
+showSnackbar('Transaction Saved Successfully', 'success');
+fetchTranasction();
+returnTrans();
+updateShiftCards();
+  fetch(`../config/transaction.php?action=getReceipt&transaction_id=${data.transaction_id}`)
+      .then(res => res.json())
+      .then(receiptData => {    
+        console.log('receipt' + receiptData);
+        populateReceipt(receiptData);
+
+        // open print
+        window.print();
+        cart = {};
+         renderCart();
+        updateSummary();
+      });
+
+
+    } else {
+       
+        alert('Error: ' + data.message);
+    }
+});
+
+
+function returnTrans() {
+    const trantab = document.getElementById('maintab');
+    const prompt = document.getElementById('prompt1');
+    const confirmSection = document.getElementById('confirm');
+    const prompt_no = document.getElementById('cancel-tr');
+    const prompt_yes = document.getElementById('go-tr');
+    confirmSection.classList.add('hidden');
+    prompt.classList.remove('hidden');
+
+    prompt_yes.onclick = function () {
+        cart = {};
+        updateSummary();
+        trantab.classList.remove('hidden');
+        prompt.classList.add('hidden');
+    }
+    prompt_no.onclick = function () {
+        closeform();
+    }
+
+}
+}}
+
+function populateReceipt(data){
+
+const t = data.transaction;
+const items = data.items;
+
+const total = Number(t.total_amt);
+const subtotal = total / 1.12;
+const vat = total - subtotal;
+
+// VAT
+document.getElementById("trans-vat").textContent =
+"₱" + vat.toLocaleString('en-PH', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
+
+
+
+// transaction info
+document.getElementById("trans-number").textContent = t.transaction_no;
+document.getElementById("trans-cashier").textContent = t.username;
+document.getElementById("trans-date").textContent = t.date_created;
+
+// payment
+document.getElementById("trans-payment").textContent = t.payment_method;
+document.getElementById("trans-reference").textContent = t.reference_num;
+
+// total
+document.querySelector("#receipt .font-bold").textContent =
+"₱" + total.toLocaleString('en-PH', {minimumFractionDigits:2});
+    
+// items table
+const tbody = document.getElementById("trans-items");
+tbody.innerHTML = "";
+
+
+// other
+document.getElementById("amt-r").textContent =
+"₱" + t.amt_received.toLocaleString('en-PH', {  minimumFractionDigits: 2,
+  maximumFractionDigits: 2});
+
+
+let totalItems = 0;
+let subtotalSum = 0;
+let change = t.amt_received - t.total_amt;
+items.forEach(item => {
+
+    const itemSubtotal = Number(item.subtotal);
+
+    totalItems += Number(item.qty);
+    subtotalSum += itemSubtotal;
+    
+    
+
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td class="text-right">
+        ₱${itemSubtotal.toLocaleString('en-PH',{minimumFractionDigits:2})}
+      </td>
+    `;
+
+    tbody.appendChild(row);
+});
+document.getElementById("amt_ch").textContent =
+"₱" + change.toLocaleString('en-PH', {minimumFractionDigits:2});
+// subtotal
+document.getElementById("trans-sub").textContent =
+"₱" + subtotalSum.toLocaleString('en-PH', {minimumFractionDigits:2});
+
+// item count
+document.getElementById("trans-items-count").textContent = totalItems;
+
+}
+
+
+async function startShift() {
     try {
-        const response = await fetch('../config/end_shift.php', {
+        const response = await fetch('../config/start_shift.php', {
             method: 'POST',
-            credentials: 'include',
+            credentials: 'include', // important to send session cookies
+            headers: {
+                'Content-Type': 'application/json'
+            }
         });
+
         const data = await response.json();
 
-        if (data.message) {
-            onShift = false;
-            updateButtonUI();
-            showSnackbar('Shift Ended', 'success');
-            openPanel();
-        } else if (data.error) {
+        if (response.ok) {
+            shiftStart = data.shift_start; 
+            fetchShift();
+            showSnackbar('Shift has been Started', 'success');
+            updateShiftCards();
+            closeform(); // close modal if you want
+        } else {
             console.error(data.error);
-            alert(data.error);
+            showSnackbar(`Error Shift : ${data.error} `, 'error');
+            alert(`Error starting shift: ${data.error}`);
         }
     } catch (err) {
-        console.error('Fetch error:', err);
+        console.error(err);
+        alert('Network error starting shift');
     }
 }
 
+async function loadLowStock() {
+    const container = document.getElementById('lowStockContainer');
+    container.innerHTML = ''; // clear previous items
 
-function startShift() {
-    fetch('../config/start_shift.php', {
-        method: 'POST',
-        credentials: 'include',   // include session so PHP knows the user
-        headers: {
-            'Content-Type': 'application/json'
+    try {
+        const res = await fetch('../config/dashboard.php?action=lowStock');
+        const data = await res.json();
+
+        if (data.length > 0) {
+            
+            data.forEach(item => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = "w-full h-20 rounded flex items-center p-2 flex-row gap-2 border border-[#FF9E9E] bg-[#FFF0F0] text-[#FF5050] font-inter";
+
+                const img = document.createElement('img');
+                img.src = `../assets/${item.item_type === 'fuel' ? 'low_fuel.png' : 'low_prod.png'}`;
+                img.className = "w-14 h-14";
+
+                const infoDiv = document.createElement('div');
+                infoDiv.className = "flex flex-col font-semibold";
+                infoDiv.innerHTML = `
+                    <span class="text-sm">${item.item_name}</span>
+                    <span class="text-xs">Stocks Left :</span>
+                    <span class="text-xs">${item.stock}</span>
+                `;
+
+                itemDiv.appendChild(img);
+                itemDiv.appendChild(infoDiv);
+                container.appendChild(itemDiv);
+            });
+        } else {
+            const emptyDiv = document.createElement('div');
+            emptyDiv.className = "w-full h-full flex flex-col gap-1 justify-center items-center";
+            emptyDiv.innerHTML = `
+                <img src="../assets/restock_check.png"> 
+                <span class="text-[#1A2F58] text-sm text-center">No products that need to be restocked yet.</span>
+            `;
+            container.appendChild(emptyDiv);
         }
-    })
-    .then(response => response.json())  // parse JSON from PHP
+    } catch (err) {
+        console.error('Error loading low stock:', err);
+    }
+}
+
+// initial load
+loadLowStock();
+
+// optional: refresh every 30s
+setInterval(loadLowStock, 30000);
+
+function shiftbtn() {
+    const shift_title = document.getElementById('shift_t');
+    const shift_body = document.getElementById('shift_s');
+    const shift_icon = document.getElementById('start-icon');
+    const s_icon = document.getElementById('icon');
+
+
+    shift_title.textContent = "End your Shift";
+    shift_body.textContent = "Close active transactions and finish the shift.";
+    shift_icon.classList.remove("bg-[#B6FFAF]");
+    s_icon.classList.remove("text-[#55A34E]");
+    s_icon.classList.add("text-[#A34E4E]");
+    shift_icon.classList.add("bg-[#FFBDBD]");
+}
+
+const log_btn = document.getElementById('log-btn');
+
+log_btn.onclick = () => {
+    openModal1('logout');
+    document.getElementById('log-out').onclick = () => {
+                endShift();
+                        setTimeout(() => {
+                        window.location.href='../config/logout.php';
+                        }, 500); // 500ms delay to give endShift time to complete
+                }
+}
+
+document.getElementById("transactionContainer").addEventListener("click", function(e) {
+
+    const btn = e.target.closest(".transopen");
+
+    if (btn) {
+
+        const card = btn.closest(".transaction-card");
+        const id = card.dataset.transaction;
+
+        openModal1('transview');
+        viewTransaction(id);
+
+    }
+
+});
+
+function formatPeso(value) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(value);
+}
+
+function viewTransaction(id) {
+    let trans_no = null;
+
+    fetch(`../config/transaction.php?action=viewTransaction&id=${id}`)
+    .then(res => res.json())
     .then(data => {
-        if (data.shift_start) {
-            
-            onShift = true;
-            shiftStartTime = new Date(data.shift_start);
-            if (shiftTimerInterval) clearInterval(shiftTimerInterval);
-            shiftTimerInterval = setInterval(updateShiftStatus, 60000); 
-            updateButtonUI();
-            updateShiftStatus();
-            if (statusColorEl) {
-                statusColorEl.style.backgroundColor = "#32a836"; // overrides Tailwind class
-            }
+        if (data.length === 0) return;
 
+        const transaction = data[0];
+        // Display transaction info
+        document.getElementById("trans_no").textContent = "TRNS-" + String(transaction.transaction_id).padStart(3, "0");
+        document.getElementById("trans_date").textContent = transaction.date_created;
+        document.getElementById("trans_payment").textContent = transaction.payment_method;
+        document.getElementById("ref-num").textContent = transaction.reference_num;
+
+        // Calculate change
+        trans_no = transaction.transaction_id;
+      
+        const amt_received = parseFloat(transaction.amt_received);
+        const total_amt = parseFloat(transaction.total_amt);
+        const change = amt_received - total_amt;
+
+        // Display amounts in PHP peso
+        document.getElementById("amt_r").textContent = formatPeso(amt_received);
+        document.getElementById("amt_c").textContent = formatPeso(change);
+
+        // Populate items table
+        const tbody = document.getElementById("transaction-items");
+        tbody.innerHTML = "";
+        let total = 0;
+
+        data.forEach(item => {
+            const subtotal = parseFloat(item.subtotal);
+            total += subtotal;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="py-1 text-[#1A2F58]">${item.item_name}</td>
+                <td class="py-1 text-[#1A2F58]">${item.quantity}</td>
+                <td class="py-1 text-[#1A2F58]">${formatPeso(subtotal)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        document.getElementById("transtotal").textContent = formatPeso(total);
+          const void_tr = document.getElementById('void');
+                if (transaction.status === 'Void') {
+                    void_tr.disabled = true;
+                    void_tr.textContent = "This Transaction has been voided";
+                    void_tr.classList.add('cursor-not-allowed');
+                }
+                else {
+                    void_tr.disabled = false;
+                     void_tr.classList.remove('cursor-not-allowed');
+                    
+                    void_tr.onclick = () => {
+                    openModal1('voidTrans');
+                    const go_void = document.getElementById('go-void');
+                    go_void.onclick = () => {
+                        voidform(transaction.transaction_id);
+                    }
+                };
+                 
+                }
             
-        } 
-        else if (data.error) {
-            console.error('Error:', data.error);
-        }
+            const generate = document.getElementById('gen_r');
+            if(transaction.status === 'Void') {
+                generate.classList.add('hidden');
+            }
+            else {
+                generate.classList.remove('hidden');
+            }
+                        generate.onclick = () => {
+                 fetch(`../config/transaction.php?action=getReceipt&transaction_id=${id}`)
+                    .then(res => res.json())
+                    .then(receiptData => {    
+
+                        populateReceipt(receiptData);
+
+                        // open print
+                        window.print();
+                    });
+
+            }
+            
+       
         
     })
-    .catch(error => console.error('Fetch error:', error));
+    .catch(err => console.error(err));
+
 }
 
-function updateShiftStatus() {
-    if (!shiftStartTime) return;
-  
-    const now = new Date();
-    const diffSeconds = Math.floor((now - shiftStartTime) / 1000);
-    let displayText = "Shift started ";
 
-  
+function voidform(id) {
+    const main = document.getElementById('mainvoid');
+    const confirmvoid = document.getElementById('confirmvoid');
+    const form = document.getElementById("form-void");
 
-    if (diffSeconds < 60) {
-        displayText += "a few seconds ago";
-    } else if (diffSeconds < 3600) {
-        const minutes = Math.floor(diffSeconds / 60);
-        displayText += `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
-    } else if (diffSeconds < 86400) {
-        const hours = Math.floor(diffSeconds / 3600);
-        displayText += `${hours} hour${hours !== 1 ? 's' : ''} ago`;
+    main.classList.add('hidden');
+    confirmvoid.classList.remove('hidden');
+
+    // Remove any previous listener to prevent duplicates
+    form.replaceWith(form.cloneNode(true)); 
+    const newForm = document.getElementById("form-void");
+    const newInput = document.getElementById("manager_pass");
+    const newErrorMsg = document.getElementById("error-msg");
+
+    newForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const password = newInput.value.trim(); // Trim spaces
+
+        try {
+            const res = await fetch("../config/transaction.php?action=verifypass", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: password })
+            });
+
+            const data = await res.json();
+
+            if(data.success){
+                closeform();
+                voidtrans(id);
+            } else {
+              
+                // Show error
+                newErrorMsg.classList.remove("opacity-0");
+                newErrorMsg.classList.add("opacity-100");
+                newInput.classList.add("border-red-700", "ring-2", "ring-red-500", "rounded");
+                newInput.classList.add("animate-shake");
+                setTimeout(() => newInput.classList.remove("animate-shake"), 300);
+                newInput.value = '';
+                newInput.focus();
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    });
+
+    // Remove error effects as user types
+    newInput.addEventListener("input", () => {
+        newInput.classList.remove("border-red-700", "ring-2", "ring-red-500");
+        newErrorMsg.classList.remove("opacity-100");
+        newErrorMsg.classList.add("opacity-0");
+    });
+}
+
+function voidtrans(id){
+fetch("../config/transaction.php?action=voidTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ transaction_id: id })
+})
+.then(res => res.json())
+.then(data => {
+    if(data.success){
+        showSnackbar('Transaction Voided Successfully', 'sucess');
     } else {
-        const days = Math.floor(diffSeconds / 86400);
-        displayText += `${days} day${days !== 1 ? 's' : ''} ago`;
+        showSnackbar('Error found', 'error');
     }
+});
+fetchTranasction();
+}
 
-    document.getElementById('shift_status').textContent = displayText;
+
+function fetchTranasction() {
+    fetch("../config/dashboard.php?action=getTransaction")
+    .then(response => response.json())
+    .then(data => {
+
+        const container = document.getElementById("transactionContainer");
+
+        let html = "";
+
+        data.forEach(transaction => {
+
+            const formattedTotal = Number(transaction.total_amt).toLocaleString('en-PH', {
+                style: 'currency',
+                currency: 'PHP'
+            });
+
+            html += `
+            <div class="transaction-card w-full p-3 flex flex-row gap-2 rounded-lg hover:bg-[#EBEBEB] transition-colors"
+            data-transaction="${transaction.transaction_id}"
+            data-date="${transaction.date_created}"
+            data-status="${transaction.status}">
+
+                <img class="status-icon" src="../assets/Check1.png">
+
+                <div class="flex flex-col gap-3 justify-between w-full">
+
+                    <div class="flex flex-row justify-between">
+                        <button class="font-semibold transopen">
+                            <u>${transaction.transaction_no}</u>
+                        </button>
+                        <span>${transaction.date_created}</span>
+                    </div>
+
+                    <div class="flex flex-row justify-between">
+                        <span>${transaction.payment_method}</span>
+                        <span>${formattedTotal}</span>
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        document.querySelectorAll('.transaction-card').forEach(card => {
+            const status = card.dataset.status; // get status from data-status
+            const img = card.querySelector('.status-icon'); // target the img element
+
+            if (status === 'Void') {
+                img.src = '../assets/Void.png'; // use void image
+            } 
+            else {
+                img.src = '../assets/Check1.png'; // default / completed image
+            }
+        });
+    });
+
+}
+
+async function updateShiftCards() {
+    try {
+        const response = await fetch('../config/dashboard.php?action=updatecard'); 
+        const data = await response.json();
+        console.log(data);
+
+        // --- CURRENT SHIFT ---
+        const currentDiv = document.getElementById('currentShiftDiv');
+        const currentPlaceholder = document.getElementById('currentPlaceholder');
+
+        if (data.currentShift && data.currentShift.stats) {
+            currentDiv.classList.remove('hidden');
+            currentPlaceholder.classList.add('hidden');
+
+            currentDiv.querySelector('.sale-value').textContent = `₱ ${Number(data.currentShift.stats.totalSales).toLocaleString()}`;
+            currentDiv.querySelector('.fuel-sold').textContent = `${Number(data.currentShift.stats.fuelSold).toLocaleString()} L`;
+            currentDiv.querySelector('.trans-made').textContent = Number(data.currentShift.stats.transactions);
+        } else {
+            currentDiv.classList.add('hidden');
+            currentPlaceholder.classList.remove('hidden');
+        }
+
+        // --- PREVIOUS SHIFT ---
+        const prevDiv = document.getElementById('prevShiftDiv');
+        const prevPlaceholder = document.getElementById('prevPlaceholder'); // make sure this exists
+
+        if (data.prevShift && data.prevShift.stats && prevDiv) {
+            prevDiv.classList.remove('hidden');
+            if (prevPlaceholder) prevPlaceholder.classList.add('hidden');
+
+            prevDiv.querySelector('.prev-sale-value').textContent = `₱ ${Number(data.prevShift.stats.totalSales).toLocaleString()}`;
+            prevDiv.querySelector('.prev-fuel-sold').textContent = `${Number(data.prevShift.stats.fuelSold).toLocaleString()} L`;
+            prevDiv.querySelector('.prev-trans-made').textContent = Number(data.prevShift.stats.transactions);
+        } else if (prevDiv && prevPlaceholder) {
+            prevDiv.classList.add('hidden');
+            prevPlaceholder.classList.remove('hidden');
+        }
+
+    } catch (error) {
+        console.error('Error updating shift cards:', error);
+    }
 }

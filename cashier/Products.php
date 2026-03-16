@@ -89,169 +89,116 @@ if ($_SESSION['role'] !== 'Cashier') {
         </div>
 
     </nav> 
-    <main class="ml-64 h-auto min-w-[800px] w-[81%] flex flex-row ">
-       <div class=" w-[70%] p-11 flex flex-col">
-            <p class="text-[#1F3A69] font-inter font-bold text-2xl mb-5">Product Inventory</p>   
-            <div class=" mb-6">
-            <p class="font-base text-[#1F3A69] font-inter font-bold mb-3">Fuel Products</p>
-            <div class="flex flex-row justify-between">
-                <div class="flex flex-col bg-gradient-to-b from-[#1A2F58] via-[#1A2F59] to-[#4471CC]
-                w-52 rounded-[10px] h-32 p-3 shadow-[0_4px_5px_1px_rgba(0,0,0,0.25)]
-                ">
-                    <p class="font-inter font-medium text-base text-[#F8F8FF]">Tank #1</p>
-                    <p class="font-inter font-medium text-[12px] text-[#F8F8FF]">Capacity : 14,000 L / 20,000 L</p>
-                    <br><br>
-                    <div class="flex flex-row justify-between">
-                       <div class="flex flex-row items-center gap-1">
-                        <div class="w-2 h-2 bg-[#38AC5B] rounded-full"></div>
-                        <p class="font-inter text-[10px] text-[#F8F8FF]">Sufficient Stock</p>
-                        </div>
-                        <p class="font-inter font-medium text-[13px] text-[#F8F8FF]">Unleaded</p>
-                        
-                    </div>
-                </div>
-                <div class="flex flex-col bg-gradient-to-b from-[#1A2F58] via-[#1A2F59] to-[#4471CC]
-                w-52 rounded-[10px] h-32 p-3 shadow-[0_4px_5px_1px_rgba(0,0,0,0.25)]
-                ">
-                    <p class="font-inter font-medium text-base text-[#F8F8FF]">Tank #2</p>
-                    <p class="font-inter font-medium text-[12px] text-[#F8F8FF]">Capacity : 1,000 L / 20,000 L</p>
-                    <br><br>
-                    <div class="flex flex-row justify-between">
-                       <div class="flex flex-row items-center gap-1">
-                        <div class="w-2 h-2 bg-[#F6833B] rounded-full"></div>
-                        <p class="font-inter text-[10px] text-[#F8F8FF]">Reorder Soon</p>
-                        </div>
-                        <p class="font-inter font-medium text-[13px] text-[#F8F8FF]">Premium</p>
-                        
-                    </div>
-                </div>
-               <div class="flex flex-col bg-gradient-to-b from-[#1A2F58] via-[#1A2F59] to-[#4471CC]
-                w-52 rounded-[10px] h-32 p-3 shadow-[0_4px_5px_1px_rgba(0,0,0,0.25)]
-                ">
-                    <p class="font-inter font-medium text-base text-[#F8F8FF]">Tank #3</p>
-                    <p class="font-inter font-medium text-[12px] text-[#F8F8FF]">Capacity : 9,000 L / 20,000 L</p>
-                    <br><br>
-                    <div class="flex flex-row justify-between">
-                       <div class="flex flex-row items-center gap-1">
-                        <div class="w-2 h-2 bg-[#DDE255] rounded-full"></div>
-                        <p class="font-inter text-[10px] text-[#F8F8FF]">Monitor Stock</p>
-                        </div>
-                        <p class="font-inter font-medium text-[13px] text-[#F8F8FF]">Diesel</p>
-                        
-                    </div>
-                </div>
+    <main class="ml-64 p-9 h-auto min-w-[800px] w-[81%] flex flex-row gap-5">
+      <div class="flex flex-col gap-4">
+         <span class="text-[#1F3A69] font-semibold text-2xl">Product Inventory</span>
+          <div class=" w-64 h-auto flex flex-col gap-6">
+            <span class="text-[#1F3A69] text-lg font-semibold font-inter">Fuel Products </span>
+            <div class="flex flex-col w-full h-36 gap-2 bg-[#1A2F58] rounded font-inter p-2 text-white">
+              <div class="flex flex-row justify-between text-lg font-medium">
+                  <span>Diesel</span>
+                  <span>Price Per Ltr</span>
+              </div>
+              <span class="text-xl font-semibold h-1/2  flex items-center">00,000 / 20,000L</span>
+              <div class="w-full h-1/4 flex flex-row gap-2 items-center">
+                <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                <div class="text-sm font-medium">Placeholder</div>
+              </div>
+            </div>
+            <div class="flex flex-col w-full h-36 gap-2 bg-[#1A2F58] rounded font-inter p-2 text-white">
+              <div class="flex flex-row justify-between text-lg font-medium">
+                  <span>Diesel</span>
+                  <span>Price Per Ltr</span>
+              </div>
+              <span class="text-xl font-semibold h-1/2  flex items-center">00,000 / 20,000L</span>
+              <div class="w-full h-1/4 flex flex-row gap-2 items-center">
+                <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                <div class="text-sm font-medium">Placeholder</div>
+              </div>
+            </div>
+            <div class="flex flex-col w-full h-36 gap-2 bg-[#1A2F58] rounded font-inter p-2 text-white">
+              <div class="flex flex-row justify-between text-lg font-medium">
+                  <span>Diesel</span>
+                  <span>Price Per Ltr</span>
+              </div>
+              <span class="text-xl font-semibold h-1/2  flex items-center">00,000 / 20,000L</span>
+              <div class="w-full h-1/4 flex flex-row gap-2 items-center">
+                <div class="w-2 h-2 rounded-full bg-red-600"></div>
+                <div class="text-sm font-medium">Placeholder</div>
+              </div>
             </div>
             
-            </div>
-            <div class="bg-[#FFFFFF] rounded-xl p-3 shadow-[0_2px_3px_1px_rgba(0,0,0,0.25)]">
-                <div class="flex flex-row justify-between items-center mb-5">
-                    <p class="font-inter font-bold text-base text-[#1F3A69]">Automotive Products</p>
-                     <div class="flex flex-row gap-3"> 
-                      <div class="relative">
-                      <input type="text" placeholder="Search..." class="w-full p-1 border border-[#1F3A69] font-inter font-normal rounded-[3px]">
-                      <i class="fa-solid fa-magnifying-glass absolute right-2 bottom-2 opacity-50"></i>
-                    </div>
-                      <button class="bg-[#E0F1FF] text-[#1F3A69] border border-[#1F3A69] 
-                      w-28 flex flex-row justify-between items-center pl-2 font-semibold text-base rounded-[3px] pr-2">
-                        Filters
-                        <i class="fa-solid fa-v"></i>
-                      </button>
-                  </div>    
-                </div>
-                <div class="max-h-56 overflow-y-auto border-[0.5px] border-[#1A2F58] border-opacity-50 rounded-sm mb-5">
-                <table class="w-full text-center border-collapse">
-                      <thead class="sticky top-0 bg-[#E5EFFF] text-[#1A2F58] text-sm font-inter font-semibold tracking-wide shadow-sm ">
-                        <tr>
-                          <th class="px2 py-3">Product Name</th>
-                          <th class="px2 py-3">Category</th>
-                          <th class="px2 py-3">Price</th>   
-                          <th class="px2 py-3">Stock</th>
-                          <th class="px2 py-3">Status</th>
-                        </tr>   
-                      </thead>     
-                      <tbody class="text-[#4E6CA8] text-[12px] font-inter tracking-wide">
-                        <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Petron Brake Fluid</td>
-                          <td class="px-2 py-2 font-normal">Brake Fluid</td>
-                          <td class="px-2 py-2 font-normal">200.00</td>
-                          <td class="px-2 py-2 font-normal">14</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#FFE580] px-1 w-16 text-[#745D00] font-medium rounded-md border border-[#745D00]">Low</p></td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Engine Oil</td>
-                          <td class="px-2 py-2 font-normal">Engine Oil</td>
-                          <td class="px-2 py-2 font-normal">250.00</td>
-                          <td class="px-2 py-2 font-normal">20</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#D3FFD4   ] px-1 w-16 text-[#007431] font-medium rounded-md border border-[#007431]">In Stock</p></td>
-                       </tr>
-                        <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Antifreeze</td>
-                          <td class="px-2 py-2 font-normal">Antifreeze</td>
-                          <td class="px-2 py-2 font-normal">300.00</td>
-                          <td class="px-2 py-2 font-normal">0</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#FFD3D3] px-1 w-16 text-[#740000] font-medium rounded-md border border-[#740000]">Sold Out</p></td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Petron Brake Fluid</td>
-                          <td class="px-2 py-2 font-normal">Brake Fluid</td>
-                          <td class="px-2 py-2 font-normal">200.00</td>
-                          <td class="px-2 py-2 font-normal">14</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#FFE580] px-1 w-16 text-[#745D00] font-medium rounded-md border border-[#745D00]">Low</p></td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Engine Oil</td>
-                          <td class="px-2 py-2 font-normal">Engine Oil</td>
-                          <td class="px-2 py-2 font-normal">250.00</td>
-                          <td class="px-2 py-2 font-normal">20</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#D3FFD4   ] px-1 w-16 text-[#007431] font-medium rounded-md border border-[#007431]">In Stock</p></td>
-                       </tr>
-                        <tr class="even:bg-[#DEEAFF] even:border-[0.5px] even:border-[#1A2F58] even:border-opacity-50">
-                          <td class="px-2 py-2 font-normal">Antifreeze</td>
-                          <td class="px-2 py-2 font-normal">Antifreeze</td>
-                          <td class="px-2 py-2 font-normal">300.00</td>
-                          <td class="px-2 py-2 font-normal">0</td>
-                          <td class="px-2 py-2 font-normal justify-center flex"><p class="bg-[#FFD3D3] px-1 w-22 text-[#740000] font-medium rounded-md border border-[#740000]">Sold Out</p></td>
-                       </tr>
-
-                      </tbody>        
-                    </table>
-                </div>
+          </div>
+      </div>
+      <div class="w-1/2 h-auto p-1 flex flex-col gap-2 font-inter text-[#1A2F58]">
+       <div class="w-full h-auto flex flex-row justify-between items-center">
+          <span class="text-xl font-semibold">Automotive Products</span>
+           <div class="relative h-auto">
+                  <input id="searchTransaction" type="text" placeholder="Search..." class="w-full p-1 border border-[#1F3A69] font-inter font-normal rounded-[3px]">
+                 <i class="fa-solid fa-magnifying-glass absolute right-2 bottom-2 opacity-50"></i>
             </div>
        </div>
-       <div class="w-[30%] p-4 pt-11 flex flex-col
-       bg-gradient-to-b from-[#F2F6FF] via-[#F2F6FF] to-[#DBE8FF]
-       shadow-[0_2px_3px_1px_rgba(0,0,0,0.25)]">
-        <p class="text-xl font-inter font-semibold text-[#1A2F58]">Product Information</p>
-        <p class="text-[28px] font-inter font-bold text-[#1A2F58] mb-2 ">Petron Brake Fluid</p>
-        <div class="flex justify-center items-center mb-4">
-            <img src="../assets/Sample.png">
-        </div>  
-        <div class="flex flex-col gap-2">
-            <div class="flex flex-row justify-between items-center">
-                <p class="text-sm font-inter text-[#1F3A69] font-bold">Stock Status</p>
-                <div class="flex flex-row gap-3 items-center">
-                    <p class="border bg-[#FFE580] text-[12px] h-max w-max px-1 text-[#745D00] font-bold font-inter rounded-md border-[#745D00]">Low Stock</p>
-                    <p class="text-[#1A2F58] font-inter text-base font-normal">13 remaining</p>
+       <div class="h-[94%] bg-white rounded  max-h-auto overflow-y-auto border border-[#1A2F58]/20 w-full">
+                    <table class="min-w-full">
+                    <thead class=" sticky top-0 bg-white text-[#1A2F58]  text-sm font-inter font-semibold tracking-wide shadow-sm shadow-[#1A2F58]/20">
+                        <th class="font-inter text-base text-[#1A2F58] font-semibold py-2">Product Name</th>
+                        <th class="font-inter text-base text-[#1A2F58] font-semibold py-2">Unit Price</th>
+                        <th class="font-inter text-base text-[#1A2F58] font-semibold py-2">Stock Left</th>
+                        <th class="font-inter text-base text-[#1A2F58] font-semibold py-2">Status</th>
+                    </thead>
+                    <tbody id="productTableBody" class=" text-center font-inter text-[13px] text-[#1A2F58] font-normal py-1 divide-y divide-[#1A2F58]/30">
+                      <tr class="">
+                        <td class="px-1 py-3">Petron Brake Fluid</td>
+                        <td class="px-1 py-3">₱250.00</td>
+                        <td class="px-1 py-3">  50</td>
+                        <td class="px-1 py-3"><p class="flex flex-row justify-center items-center font-inter text-white"><span class="bg-[#48BA6B] w-14 py-[1px] rounded-full text-[10px]">Available</span></p></td>
+                      </tr>
+                    </tbody>
+                  </table>
+       </div>
+      </div>
+      <div class="w-1/4 h-auto gap-5 flex flex-col font-inter">
+        <div class="flex flex-col w-full h-3/4 border border-[#1A2F58]/20 bg-white rounded-tr rounded-tl text-white">
+          <div class="w-full h-10 p-2 bg-[#1A2F58] text-white">Product Information</div>
+          <div class="p-4 flex flex-col gap-2">
+            <div class="flex flex-row gap-1 text-[#1A2F58]">
+              <img src="../assets/Sample.png" class="w-24 h-24">
+              <div class="flex flex-col text-sm font-medium justify-between">
+                <div>
+                  <span>Product Name</span>
+                  <span>Unit Price</span>
                 </div>
-                
+                <div>
+                  <span>Stock Left</span>
+                  <span>Placeholder</span>
+                </div>
+              </div>
             </div>
-            <div class="w-full border-t border-t-[#1A2F58] border-opacity-50"></div>
+          </div>
+          <div class="w-full h-full text-[#1A2F58] px-4 flex flex-col gap-2">
             <div class="flex flex-row justify-between items-center">
-                <p class="text-sm font-inter text-[#1F3A69] font-bold">Category</p>
-                <p class="text-[#1A2F58] font-inter text-base font-normal">Brake Fluid</p>           
+                <span class="font-semibold text-sm">Last Restock:</span>
+                <span class="font-medium text-xs">Placeholder</span>
             </div>
-            <div class="w-full border-t border-t-[#1A2F58] border-opacity-50"></div>
-             <div class="flex flex-row justify-between items-center">
-                <p class="text-sm font-inter text-[#1F3A69] font-bold">Last Stocked</p>
-                <p class="text-[#1A2F58] font-inter text-base font-normal">3 days ago</p>           
-            </div>
-            <div class="w-full border-t border-t-[#1A2F58] border-opacity-50"></div>
-            <p class="text-sm font-inter text-[#1F3A69] font-bold">Description</p>
-            <p class="text-base font-inter font-normal text-[#1F3A69] text-justify">
-                Designed for automotive brake systems. Not suitable for motorcycles or 2-wheeled vehicles.
-            </p>
+            <span class="font-semibold text-sm">Description</span>
+            <textarea readonly class="w-full h-auto font-medium text-sm resize-none">hello</textarea>
+            
+          </div>
         </div>
-       </div>
+        <div class="flex flex-col w-full h-[35%] border border-[#1A2F58]/20 bg-white p-3 gap-2">
+          <span class="text-[#1A2F58] text-sm font-semibold">Recent Inventory Stocks</span>
+          <div class="w-full h-3/4 p-2 border-t border-b border-[#1A2F58]">
+            <div class="flex flex-row gap-2 w-full h-full items-center">
+              <img src="../assets/Sample.png" class="w-20 h-20">
+              <div class="flex flex-col text-[#1A2F58] text-sm  ">
+                <span>Product Name</span>
+                <span>Last Restocked:</span>
+                <span>Date</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </main>
 
 </body>

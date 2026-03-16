@@ -16,8 +16,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     header('Content-Type: application/json');
 
-    $username = $_POST['username'];
-    $password = $_POST['password'];
+    // Trim inputs to remove spaces/newlines
+    $username = trim($_POST['username']);
+    $password = trim($_POST['password']);
 
     $stmt = $conn->prepare("SELECT user_ID, role, password FROM user_table WHERE username = ?");
 

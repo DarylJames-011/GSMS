@@ -263,7 +263,7 @@ function renderCart() {
             tr.innerHTML = `
                 <td class="py-2 px-2 font-inter font-semibold">${item.type} (Fuel)</td>
                 <td class="py-2 px-2 font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
-                <td class="py-2 px-2 font-inter font-semibold">${item.liters} L</td>
+                <td class="py-2 px-2 font-inter font-semibold">${Number(item.liters).toFixed(2)}L</td>
                 <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
                 <td>
                     <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
@@ -483,18 +483,23 @@ toggleBtn.addEventListener("click", () => {
 
   const savebtn = document.getElementById('save-btn');
   savebtn.addEventListener("click", () => {
-    savebtn.disabled = true;
-    saveTransaction();
-    cart = {};          // empty the cart
-    renderCart();       // refresh the table
-    updateSummary();  
-    selectedFuel = null;
+    if (Object.keys(cart).length === 0) {
+        alert('Please Add an Order before Proceeding');
+    }
+
+    else {
+        confirmPayment();
+    }
+    
+
 
   });
 }
-
-
 const totaldb = null;
+let subtotal1 = null;
+let ref1 = null;
+
+
 
 function updateSummary() {
     let subtotal = 0;
@@ -518,6 +523,7 @@ function updateSummary() {
 
     // Total already includes VAT
     const total = subtotal; // stays as const
+    subtotal1 = subtotal;
     const totalToUse = totaldb !== null ? totaldb : total;
 
     // Format numbers
@@ -531,7 +537,94 @@ function updateSummary() {
     document.getElementById("summary-total").textContent = `₱${totalFormatted}`;
 }
 
-function saveTransaction() {
+function confirmPayment() {
+    const trantab = document.getElementById('maintab');
+    const confirmSection = document.getElementById('confirm');
+    const save = document.getElementById('save-trns');
+    const change = document.getElementById('change');
+    const total_lbl = document.getElementById('totalamt');
+    const input = document.getElementById("amt-rec");
+    const ref = document.getElementById("ref-num");
+    const return_btn = document.getElementById('return');
+    const paymentSelect = document.getElementById('payment-method');
+
+    trantab.classList.add("hidden");
+    confirmSection.classList.remove("hidden");
+
+    let formatted = new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP'
+    }).format(subtotal1);
+
+    total_lbl.textContent = formatted;
+
+    // RETURN BUTTON
+    return_btn.onclick = () => {
+        trantab.classList.remove("hidden");
+        confirmSection.classList.add("hidden");
+        input.value = "";
+        ref.value = "";
+    };
+
+    // AMOUNT RECEIVED INPUT
+    input.oninput = function () {
+        let inputAmount = Number(input.value) || 0;
+        let finalvalue = inputAmount - subtotal1;
+
+        let formatted = new Intl.NumberFormat('en-PH', {
+            style: 'currency',
+            currency: 'PHP'
+        }).format(finalvalue);
+
+        if (finalvalue < 0) {
+            change.classList.add("text-[#D03939]");
+        } else {
+            change.classList.remove("text-[#D03939]");
+        }
+
+        change.textContent = formatted;
+    };
+
+    // PAYMENT METHOD TOGGLE
+    function toggleRef() {
+        if (["Credit", "Online"].includes(paymentSelect.value)) {
+            ref.disabled = false;
+            ref.focus();
+            ref.classList.remove("cursor-not-allowed");
+        } else {
+            ref.disabled = true;
+            ref.value = "";
+            ref.classList.add("cursor-not-allowed");
+        }
+    }
+
+    paymentSelect.onchange = toggleRef;
+    toggleRef(); // run immediately
+
+    // SAVE TRANSACTION
+    save.onclick = function () {
+
+        if (["Credit", "Online"].includes(paymentSelect.value) && ref.value === "") {
+            alert('Please add a Reference Number before proceeding.');
+            return;
+        }
+
+        let inputAmount = Number(input.value) || 0;
+
+        if (inputAmount <= 0 || inputAmount < subtotal1) {
+            alert('Insufficient amount. Please enter enough money to cover the total.');
+            return;
+        }
+
+        saveTransaction(ref.value, inputAmount);
+
+
+    };
+
+
+
+}
+function saveTransaction(reference,amount) {
   
 
   if (!cart || Object.keys(cart).length === 0) {
@@ -539,14 +632,20 @@ function saveTransaction() {
     return;
   }
   else {
-  const paymentMethod = document.querySelector('#payment-method').value;  
+  let paymentMethod = document.querySelector('#payment-method').value;  
+  if (!paymentMethod) {
+  paymentMethod = "Cash";
+    }
+
   fetch('../config/transaction.php?action=saveTransaction', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
         cart: cart,
-        total: totaldb,
-        payment_method: paymentMethod
+        total: subtotal1,
+        payment_method: paymentMethod,
+        reference_num: reference,     // new field
+        amt_received: amount
     })
 })
 .then(res => res.json())
@@ -554,61 +653,511 @@ function saveTransaction() {
     if(data.status === 'success') {
 showSnackbar('Transaction Saved Successfully', 'success');
 fetchTranasction();
-closeform();
+returnTrans();
+
+  fetch(`../config/transaction.php?action=getReceipt&transaction_id=${data.transaction_id}`)
+      .then(res => res.json())
+      .then(receiptData => {    
+
+        populateReceipt(receiptData);
+
+        // open print
+        window.print();
+        cart = {};
+      });
+
+
     } else {
         alert('Error: ' + data.message);
     }
 });
+
+
+function returnTrans() {
+    const trantab = document.getElementById('maintab');
+    const prompt = document.getElementById('prompt1');
+    const confirmSection = document.getElementById('confirm');
+    const prompt_no = document.getElementById('cancel-tr');
+    const prompt_yes = document.getElementById('go-tr');
+    confirmSection.classList.add('hidden');
+    prompt.classList.remove('hidden');
+
+    prompt_yes.onclick = function () {
+        cart = {};
+        updateSummary();
+        trantab.classList.remove('hidden');
+        prompt.classList.add('hidden');
+    }
+    prompt_no.onclick = function () {
+        closeform();
+    }
+
+}
 }}
 
+function populateReceipt(data){
+
+const t = data.transaction;
+const items = data.items;
+
+const total = Number(t.total_amt);
+const subtotal = total / 1.12;
+const vat = total - subtotal;
+
+// VAT
+document.getElementById("trans-vat").textContent =
+"₱" + vat.toLocaleString('en-PH', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2
+});
+
+// transaction info
+document.getElementById("trans-number").textContent = t.transaction_no;
+document.getElementById("trans-cashier").textContent = t.username;
+document.getElementById("trans-date").textContent = t.date_created;
+
+// payment
+document.getElementById("trans-payment").textContent = t.payment_method;
+document.getElementById("trans-reference").textContent = t.reference_num;
+
+// total
+document.querySelector("#receipt .font-bold").textContent =
+"₱" + total.toLocaleString('en-PH', {minimumFractionDigits:2});
+    
+// items table
+const tbody = document.getElementById("trans-items");
+tbody.innerHTML = "";
+
+
+// other
+document.getElementById("amt-r").textContent =
+"₱" + t.amt_received.toLocaleString('en-PH', {  minimumFractionDigits: 2,
+  maximumFractionDigits: 2});
+
+
+let totalItems = 0;
+let subtotalSum = 0;
+let change = t.amt_received - t.total_amt;
+items.forEach(item => {
+
+    const itemSubtotal = Number(item.subtotal);
+
+    totalItems += Number(item.qty);
+    subtotalSum += itemSubtotal;
+    
+    
+
+
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+      <td>${item.name}</td>
+      <td>${item.qty}</td>
+      <td class="text-right">
+        ₱${itemSubtotal.toLocaleString('en-PH',{minimumFractionDigits:2})}
+      </td>
+    `;
+
+    tbody.appendChild(row);
+});
+document.getElementById("amt_ch").textContent =
+"₱" + change.toLocaleString('en-PH', {minimumFractionDigits:2});
+// subtotal
+document.getElementById("trans-sub").textContent =
+"₱" + subtotalSum.toLocaleString('en-PH', {minimumFractionDigits:2});
+
+// item count
+document.getElementById("trans-items-count").textContent = totalItems;
+
+}
 
 
 function fetchTranasction() {
-      fetch("../config/transaction.php?action=getTransaction")
+    document.querySelector('[data-filter="all"]').click();
+    fetch("../config/transaction.php?action=getTransaction")
     .then(response => response.json())
     .then(data => {
 
         const container = document.getElementById("transactionContainer");
 
-        container.innerHTML = "";
+        let html = "";
 
-       data.forEach(transaction => {
+        data.forEach(transaction => {
 
-    const formattedTotal = Number(transaction.total_amt).toLocaleString('en-PH', {
-        style: 'currency',
-        currency: 'PHP'
+            const formattedTotal = Number(transaction.total_amt).toLocaleString('en-PH', {
+                style: 'currency',
+                currency: 'PHP'
+            });
+
+            html += `
+            <div class="transaction-card w-full p-3 flex flex-row gap-2 rounded-lg hover:bg-[#EBEBEB] transition-colors"
+            data-transaction="${transaction.transaction_id}"
+            data-date="${transaction.date_created}"
+            data-status="${transaction.status}">
+
+                <img class="status-icon" src="../assets/Check1.png">
+
+                <div class="flex flex-col gap-3 justify-between w-full">
+
+                    <div class="flex flex-row justify-between">
+                        <button class="font-semibold transopen">
+                            <u>${transaction.transaction_no}</u>
+                        </button>
+                        <span>${transaction.date_created}</span>
+                    </div>
+
+                    <div class="flex flex-row justify-between">
+                        <span>${transaction.payment_method}</span>
+                        <span>${formattedTotal}</span>
+                    </div>
+
+                </div>
+
+            </div>
+            `;
+        });
+
+        container.innerHTML = html;
+
+        document.querySelectorAll('.transaction-card').forEach(card => {
+            const status = card.dataset.status; // get status from data-status
+            const img = card.querySelector('.status-icon'); // target the img element
+
+            if (status === 'Void') {
+                img.src = '../assets/Void.png'; // use void image
+            } 
+            else {
+                img.src = '../assets/Check1.png'; // default / completed image
+            }
+        });
+
+        
+        filters();
+
+        
     });
 
-    const card = `
-    <div class="transaction-card w-full p-3 flex flex-row gap-2 rounded-lg hover:bg-[#EBEBEB] transition-colors"
-    data-transaction="${transaction.transaction_no}">
-        <img src="../assets/Check1.png">
-
-        <div class="flex flex-col gap-3 justify-between w-full">
-
-            <div class="flex flex-row justify-between">
-                <button class="font-semibold">
-                    <u>${transaction.transaction_no}</u>
-                </button>
-                <span>${transaction.date_created}</span>
-            </div>
-
-            <div class="flex flex-row justify-between">
-                <span>${transaction.payment_method}</span>
-                <span>${formattedTotal}</span>
-            </div>
-
-        </div>
-    </div>
-    `;
-
-    container.innerHTML += card;
-});
-
-    });
-    
 }
 
+updateShiftSummary();
+
+document.getElementById("transactionContainer").addEventListener("click", function(e) {
+
+    const btn = e.target.closest(".transopen");
+
+    if (btn) {
+
+        const card = btn.closest(".transaction-card");
+        const id = card.dataset.transaction;
+
+        openModal1('transview');
+        viewTransaction(id);
+
+    }
+
+});
+
+function formatPeso(value) {
+    return new Intl.NumberFormat('en-PH', {
+        style: 'currency',
+        currency: 'PHP',
+        minimumFractionDigits: 2
+    }).format(value);
+}
+
+function viewTransaction(id) {
+    let trans_no = null;
+
+    fetch(`../config/transaction.php?action=viewTransaction&id=${id}`)
+    .then(res => res.json())
+    .then(data => {
+        if (data.length === 0) return;
+
+        const transaction = data[0];
+
+        // Display transaction info
+        document.getElementById("trans_no").textContent = "TRNS-" + String(transaction.transaction_id).padStart(3, "0");
+        document.getElementById("trans_date").textContent = transaction.date_created;
+        document.getElementById("trans_payment").textContent = transaction.payment_method;
+        document.getElementById("ref-num").textContent = transaction.reference_num;
+
+        // Calculate change
+        trans_no = transaction.transaction_id;
+      
+        const amt_received = parseFloat(transaction.amt_received);
+        const total_amt = parseFloat(transaction.total_amt);
+        const change = amt_received - total_amt;
+
+        // Display amounts in PHP peso
+        document.getElementById("amt_r").textContent = formatPeso(amt_received);
+        document.getElementById("amt_c").textContent = formatPeso(change);
+
+        // Populate items table
+        const tbody = document.querySelector("table tbody");
+        tbody.innerHTML = "";
+        let total = 0;
+
+        data.forEach(item => {
+            const subtotal = parseFloat(item.subtotal);
+            total += subtotal;
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td class="py-1 text-[#1A2F58]">${item.item_name}</td>
+                <td class="py-1 text-[#1A2F58]">${item.quantity}</td>
+                <td class="py-1 text-[#1A2F58]">${formatPeso(subtotal)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+
+        document.getElementById("transtotal").textContent = formatPeso(total);
+          const void_tr = document.getElementById('void');
+                if (transaction.status === 'Void') {
+                    void_tr.disabled = true;
+                    void_tr.textContent = "This Transaction has been voided";
+                    void_tr.classList.add('cursor-not-allowed');
+                }
+                else {
+                    void_tr.disabled = false;
+                     void_tr.classList.remove('cursor-not-allowed');
+                    
+                    void_tr.onclick = () => {
+                    openModal1('voidTrans');
+                    const go_void = document.getElementById('go-void');
+                    go_void.onclick = () => {
+                        voidform(transaction.transaction_id);
+                    }
+                };
+                 
+                }
+            
+            const generate = document.getElementById('gen_r');
+            if(transaction.status === 'Void') {
+                generate.classList.add('hidden');
+            }
+            else {
+                generate.classList.remove('hidden');
+            }
+            generate.onclick = () => {
+                 fetch(`../config/transaction.php?action=getReceipt&transaction_id=${id}`)
+                    .then(res => res.json())
+                    .then(receiptData => {    
+
+                        populateReceipt(receiptData);
+
+                        // open print
+                        window.print();
+                    });
+
+            }
+       
+        
+    })
+    .catch(err => console.error(err));
+
+}
+
+
+function voidform(id) {
+    const main = document.getElementById('mainvoid');
+    const confirmvoid = document.getElementById('confirmvoid');
+    const form = document.getElementById("form-void");
+
+
+    main.classList.add('hidden');
+    confirmvoid.classList.remove('hidden');
+
+    // Remove any previous listener to prevent duplicates
+    form.replaceWith(form.cloneNode(true)); 
+    const newForm = document.getElementById("form-void");
+    const newInput = document.getElementById("manager_pass");
+    const newErrorMsg = document.getElementById("error-msg");
+
+    newForm.addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const password = newInput.value.trim(); // Trim spaces
+
+        try {
+            const res = await fetch("../config/transaction.php?action=verifypass", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password: password })
+            });
+
+            const data = await res.json();
+
+            if(data.success){
+                closeform();
+                voidtrans(id);
+            } else {
+              
+                // Show error
+                newErrorMsg.classList.remove("opacity-0");
+                newErrorMsg.classList.add("opacity-100");
+                newInput.classList.add("border-red-700", "ring-2", "ring-red-500", "rounded");
+                newInput.classList.add("animate-shake");
+                setTimeout(() => newInput.classList.remove("animate-shake"), 300);
+                newInput.value = '';
+                newInput.focus();
+            }
+        } catch(err) {
+            console.error(err);
+        }
+    });
+
+    // Remove error effects as user types
+    newInput.addEventListener("input", () => {
+        newInput.classList.remove("border-red-700", "ring-2", "ring-red-500");
+        newErrorMsg.classList.remove("opacity-100");
+        newErrorMsg.classList.add("opacity-0");
+    });
+}
+
+async function updateShiftSummary() {
+
+    const response = await fetch('../config/transaction.php?action=getsummary');
+    const data = await response.json();
+
+    if (!data.summary) return;
+
+    document.querySelector('.summary-transactions').textContent =
+        data.summary.transactions;
+
+    document.querySelector('.summary-liters').textContent =
+        Number(data.summary.totalLiters).toFixed(2) + " L";
+
+    document.querySelector('.summary-products').textContent =
+        data.summary.totalProducts;
+
+    document.querySelector('.summary-voids').textContent =
+        data.summary.voidedTransactions;
+
+    document.querySelector('.summary-cash').textContent =
+        "₱ " + Number(data.summary.cashTotal).toFixed(2);
+
+    document.querySelector('.summary-credit').textContent =
+        "₱ " + Number(data.summary.creditTotal).toFixed(2);
+
+    document.querySelector('.summary-online').textContent =
+        "₱ " + Number(data.summary.onlineTotal).toFixed(2);
+
+    document.querySelector('.summary-total').textContent =
+    "₱ " + Number(data.summary.totalSales).toFixed(2);
+
+    document.getElementById('total-sh').textContent = 
+    "₱ " + Number(data.summary.totalSales).toFixed(2);
+
+    const start = new Date(data.shiftStart);
+const end = new Date(data.shiftEnd);
+
+const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+const timeOptions = { hour: 'numeric', minute: '2-digit' };
+
+document.querySelector('.summary-date').textContent =
+    start.toLocaleDateString('en-PH', dateOptions);
+
+document.querySelector('.summary-time').textContent =
+    `${start.toLocaleTimeString('en-PH', timeOptions)} - ${end.toLocaleTimeString('en-PH', timeOptions)}`;
+
+
+        const currentTotal = Number(data.summary.totalSales);
+        const previousTotal = Number(data.previousTotal);
+
+        const comparisonText = document.getElementById('comparisonText'); // span in your card
+        const comparisonIcon = document.getElementById('comparisonIcon'); // img in your card
+
+        // Calculate difference
+        const diff = currentTotal - previousTotal;
+        const absDiff = Math.abs(diff);
+
+        if (previousTotal === 0) {
+    comparisonText.textContent = "First recorded shift";
+    comparisonText.classList.remove('text-green-600', 'text-red-600');
+    comparisonText.classList.add('text-gray-600'); // neutral
+    comparisonIcon.src = "../assets/neutral.png";
+} else if (diff > 0) {
+    comparisonText.textContent = `₱ ${absDiff.toLocaleString('en-PH')} more than the previous shift`;
+    comparisonText.classList.remove('text-gray-600', 'text-red-600');
+    comparisonText.classList.add('text-green-600'); // green for increase
+    comparisonIcon.src = "../assets/increase.png";
+} else if (diff < 0) {
+    comparisonText.textContent = `₱ ${absDiff.toLocaleString('en-PH')} less than the previous shift`;
+    comparisonText.classList.remove('text-gray-600', 'text-green-600');
+    comparisonText.classList.add('text-red-600'); // red for decrease
+    comparisonIcon.src = "../assets/decrease.png";
+} else {
+    comparisonText.textContent = "Same as previous shift";
+    comparisonText.classList.remove('text-red-600', 'text-green-600');
+    comparisonText.classList.add('text-gray-600'); // neutral
+    comparisonIcon.src = "../assets/neutral.png";
+}
+
+        // Update other stats in your card as needed
+        document.querySelector('.summary-total').textContent = `₱ ${currentTotal.toLocaleString('en-PH')}`;
+
+}
+
+function voidtrans(id){
+fetch("../config/transaction.php?action=voidTransaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ transaction_id: id })
+})
+.then(res => res.json())
+.then(data => {
+    if(data.success){
+        showSnackbar('Transaction Voided Successfully', 'sucess');
+    } else {
+        showSnackbar('Error found', 'error');
+    }
+});
+fetchTranasction();
+}
+
+
+function filters() {
+    const search = document.getElementById("searchTransaction");
+    const buttons = document.querySelectorAll(".filter-btn");
+
+buttons.forEach(button => {
+
+button.addEventListener("click", () => {
+search.value = "";
+const filter = button.dataset.filter;
+
+const cards = document.querySelectorAll(".transaction-card");
+
+const today = new Date();
+
+cards.forEach(card => {
+
+const date = new Date(card.dataset.date);
+const diff = (today - date) / (1000 * 60 * 60 * 24);
+
+let show = false;
+
+if(filter === "all") show = true;
+if(filter === "today") show = diff < 1;
+if(filter === "yesterday") show = diff >= 1 && diff < 2;
+if(filter === "week") show = diff <= 7;
+
+card.style.display = show ? "flex" : "none";
+
+});
+
+
+/* ACTIVE BUTTON STYLE */
+
+buttons.forEach(btn => {
+btn.classList.remove("bg-[#1A2F58]", "text-white");
+});
+
+button.classList.add("bg-[#1A2F58]", "text-white");
+
+});
+
+});
+}   
 function searchTransaction() {
  document.getElementById("searchTransaction").addEventListener("input", function () {
 
@@ -639,11 +1188,18 @@ function searchTransaction() {
         msg.textContent = "No transaction found.";
         container.appendChild(msg);
     }
-
+    
 });
 }
 
 document.addEventListener("DOMContentLoaded", function () {
     fetchTranasction();
-    searchTransaction();
+
 });
+
+
+
+
+
+
+ 

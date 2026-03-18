@@ -17,7 +17,17 @@ function openModal1(templateId) {
  
 }
 
- function showSnackbar(message, type = "info", duration = 3000) {
+
+
+function closeform() { 
+  modalContent.classList.add('opacity-0', 'translate-y-5'); 
+  modalOverlay.classList.add('opacity-0'); 
+  setTimeout(() => { modalWrapper.classList.add('opacity-0', 'pointer-events-none'); 
+    modalContent.innerHTML = ""; }, 500); 
+
+} 
+
+function showSnackbar(message, type = "info", duration = 3000) {
     const snackbar = document.getElementById("snackbar");
 
     // Set text
@@ -40,20 +50,16 @@ function openModal1(templateId) {
     }, duration);
 }
 
-function closeform() { 
-  modalContent.classList.add('opacity-0', 'translate-y-5'); 
-  modalOverlay.classList.add('opacity-0'); 
-  setTimeout(() => { modalWrapper.classList.add('opacity-0', 'pointer-events-none'); 
-    modalContent.innerHTML = ""; }, 500); 
-
-}
-
 const trans = document.getElementById('transbtn');
 
-trans.addEventListener('click', function() {
-    openModal1('addtrans');
-    populate();
-})
+trans.onclick = () => {
+ if (shiftStart) {
+ openModal1('addtrans');
+ populate();
+} else {
+ openModal1('shifterror');
+}
+}
 
 
 function toggleView() {
@@ -1074,7 +1080,7 @@ document.querySelector('.summary-time').textContent =
     comparisonText.textContent = "First recorded shift";
     comparisonText.classList.remove('text-green-600', 'text-red-600');
     comparisonText.classList.add('text-gray-600'); // neutral
-    comparisonIcon.src = "../assets/neutral.png";
+    comparisonIcon.src = "../assets/increase.png";
 } else if (diff > 0) {
     comparisonText.textContent = `₱ ${absDiff.toLocaleString('en-PH')} more than the previous shift`;
     comparisonText.classList.remove('text-gray-600', 'text-red-600');
@@ -1087,9 +1093,9 @@ document.querySelector('.summary-time').textContent =
     comparisonIcon.src = "../assets/decrease.png";
 } else {
     comparisonText.textContent = "Same as previous shift";
-    comparisonText.classList.remove('text-red-600', 'text-green-600');
+    comparisonText.classList.remove('text-r ed-600', 'text-green-600');
     comparisonText.classList.add('text-gray-600'); // neutral
-    comparisonIcon.src = "../assets/neutral.png";
+    comparisonIcon.src = "../assets/increase.png";
 }
 
         // Update other stats in your card as needed

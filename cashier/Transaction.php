@@ -461,6 +461,31 @@ $user_id = $_SESSION['user_id'];
       </div>
 </template>
 
+<template id="logout">
+        <div class="w-[30%] h-40 bg-white flex flex-col rounded-sm border border-[#1A2F58]/30">
+        <div class="w-full h-10 bg-[#1A2F58] shadow-sm shadow-black/20 p-2 text-white font-inter">Logout Confirmation</div>
+        <div class="p-3 font-inter text-[#1A2F58] font-medium">
+            <span>Are you sure you want to log out?</span>
+        </div>
+        <div class="w-full h-full items-end justify-end flex flex-row gap-2 p-3">
+                <button id="log-out" class="px-2 py-2 text-white border border-[#A00000] bg-[#FF7979] w-20 rounded">Yes</button>
+                <button onclick="closeform()" class="px-2 py-2 text-white bg-[#1A2F58] transition-colors hover:bg-[#1F3A69] border border-[#1A2F58] w-20 rounded font-medium">No</button>
+        </div>
+       </div>
+</template>
+
+<template id="shifterror">
+  <div class="w-[30%] h-40 bg-white flex flex-col rounded-sm border border-[#1A2F58]/30">
+        <div class="w-full h-10 bg-[#1A2F58] shadow-sm shadow-black/20 p-2 text-white font-inter">Error </div>
+
+        <div class="p-3 font-inter text-[#1A2F58] font-medium text-sm w-full">
+            <span>Please start your shift before making a transaction</span>
+        </div>
+        <div class="w-full h-3/4 items-end justify-end flex flex-row p-3">
+                <button onclick="closeform()" class="px-2 py-2 text-white bg-[#1A2F58] transition-colors hover:bg-[#1F3A69] border border-[#1A2F58] w-20 rounded font-medium">OK</button>
+        </div>
+       </div>
+</template>
 
 <body class="overflow-x-hidden overflow-y-hidden bg-gradient-to-b from-[#FFFFFF] via-[#F8F8FF] to-[#F8F8FF]">
       <!-- Hidden Receipt -->
@@ -600,19 +625,9 @@ $user_id = $_SESSION['user_id'];
           
 
 
-          <button class="bg-[#1B2D50] border-[0.5px] border-[#E5EFFF] w-full h-11 font-inter text-[#F8F8FF]
+          <button id="log-btn" class="bg-[#1B2D50] border-[0.5px] border-[#E5EFFF] w-full h-11 font-inter text-[#F8F8FF]
           rounded-lg hover:bg-[#284379] transition-colors duration-200" 
-         onclick="openModal(
-                'Log Out', 
-                'Are you sure you want to log out? Logging out will end your shift.', 
-                () => { 
-                      endShift();
-                        setTimeout(() => {
-                            window.location.href='../config/logout.php';
-                        }, 500); // 500ms delay to give endShift time to complete
-                }
-            ),
-            '#FF7979' , '#1A2F58', '#A00000', '#1A2F58'">
+          >
             Log Out
           </button>
         </div>

@@ -53,30 +53,7 @@ function openModal1(templateId) {
   });
 }
 
-async function endShift() {
-    try {
-        const response = await fetch('../config/end_shift.php', {
-            method: 'POST',
-            credentials: 'include', // important for session
-        });
 
-        const data = await response.json();
-
-        if (response.ok && !data.error) {
-            
-            shiftStart = null; // no active shift
-            updateShiftIndicator(null); // update button and status
-            updateShiftCards();
-            showSnackbar('Shift has been ended', 'success');
-            closeform();
-        } else {
-            console.error(data.error);
-            alert('Error ending shift: ' + (data.error || 'Unknown'));
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
 
 async function fetchShift() {
     try {
@@ -84,6 +61,7 @@ async function fetchShift() {
         const data = await response.json();
         shiftStart = data.shift_start; // update global variable
         updateShiftIndicator(shiftStart);
+        
 
 
 
@@ -365,7 +343,7 @@ function renderCart() {
             tr.innerHTML = `
                 <td class="py-2 px-2 font-inter font-semibold">${item.type} (Fuel)</td>
                 <td class="py-2 px-2 font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
-                <td class="py-2 px-2 font-inter font-semibold">${Number(item.liters).toFixed(2)} L L</td>
+                <td class="py-2 px-2 font-inter font-semibold">${Number(item.liters).toFixed(2)}L</td>
                 <td class="py-2 px-2 text-right whitespace-nowrap font-inter font-semibold">₱ ${item.pesos.toLocaleString('en-PH', { minimumFractionDigits: 2 })}</td>
                 <td>
                     <button class="flex justify-center items-center w-5 h-5 bg-[#FF7676] rounded-md"
@@ -759,7 +737,7 @@ returnTrans();
 updateShiftCards();
   fetch(`../config/transaction.php?action=getReceipt&transaction_id=${data.transaction_id}`)
       .then(res => res.json())
-      .then(receiptData => {    
+      .then(receiptData => {        
         console.log('receipt' + receiptData);
         populateReceipt(receiptData);
 
@@ -896,6 +874,7 @@ async function startShift() {
             shiftStart = data.shift_start; 
             fetchShift();
             showSnackbar('Shift has been Started', 'success');
+            updateShiftIndicator(shiftStart);
             updateShiftCards();
             closeform(); // close modal if you want
         } else {
@@ -972,18 +951,6 @@ function shiftbtn() {
     s_icon.classList.remove("text-[#55A34E]");
     s_icon.classList.add("text-[#A34E4E]");
     shift_icon.classList.add("bg-[#FFBDBD]");
-}
-
-const log_btn = document.getElementById('log-btn');
-
-log_btn.onclick = () => {
-    openModal1('logout');
-    document.getElementById('log-out').onclick = () => {
-                endShift();
-                        setTimeout(() => {
-                        window.location.href='../config/logout.php';
-                        }, 500); // 500ms delay to give endShift time to complete
-                }
 }
 
 document.getElementById("transactionContainer").addEventListener("click", function(e) {
@@ -1167,6 +1134,7 @@ fetch("../config/transaction.php?action=voidTransaction", {
 .then(data => {
     if(data.success){
         showSnackbar('Transaction Voided Successfully', 'sucess');
+        fetchTranasction();
     } else {
         showSnackbar('Error found', 'error');
     }
@@ -1240,7 +1208,6 @@ async function updateShiftCards() {
     try {
         const response = await fetch('../config/dashboard.php?action=updatecard'); 
         const data = await response.json();
-        console.log(data);
 
         // --- CURRENT SHIFT ---
         const currentDiv = document.getElementById('currentShiftDiv');

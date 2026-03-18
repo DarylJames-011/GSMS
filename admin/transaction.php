@@ -13,10 +13,10 @@ if ($_SESSION['role'] !== 'Administrator') {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard</title>
+  <title>GSMS | Transactions</title>
   
   <!-- Google Font -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +27,7 @@ if ($_SESSION['role'] !== 'Administrator') {
   <!-- Fonts Awesome-->
   <script src="https://kit.fontawesome.com/09f8ae972d.js" crossorigin="anonymous"></script>  
   <script src="../js/admin/general.js" defer type="module"></script>
+  <script src="../js/admin/transaction.js" defer type="module"></script>
   <!-- JS Chart-->  
 
    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -109,8 +110,8 @@ if ($_SESSION['role'] !== 'Administrator') {
                 <div class="bg-[#173161] w-[50%] h-24
                 rounded-xl border border-[#3B4963] shadow-[0px_5px_10px_rgba(27,45,80,0.4)] p-3">
               <div class="flex flex-row justify-between items-center">
-                    <span class="text-[12px] font-semibold text-white">Todays Revenue</span>
-                    <select class="rounded-md font-inter w-28 text-[#173161]">
+                    <span class="text-[12px] font-semibold text-white">Sales Revenue</span>
+                    <select id="revenue-filter" class="rounded-md font-inter w-28 text-[#173161]">
                         <option>Today</option>
                         <option>Yesterday</option>
                         <option>Last Week</option>
@@ -118,7 +119,7 @@ if ($_SESSION['role'] !== 'Administrator') {
                     </select>  
                 </div> 
                 <p class="font-inter font-bold text-white">
-                <span class="text-lg">₱ Placeholder</span>
+                <span id="revenue-text" class="text-lg">₱ Placeholder</span>
                 </p></div>
 
               <div class="bg-[#173161] w-[50%] h-24
@@ -126,31 +127,28 @@ if ($_SESSION['role'] !== 'Administrator') {
              
                 <div class="flex flex-row justify-between items-center">
                     <span class="text-[12px] font-semibold text-white">Liters Sold Today</span>
-                    <select class="rounded-md font-inter w-28 text-[#173161]">
-                        <option>All</option>
-                        <option>Diesel</option>
-                        <option>Unleaded</option>
-                        <option>Premium</option>
+                    <select id="fuel-filter" class="rounded-md font-inter w-28 text-[#173161]">
+                        <option value="All" selected>All</option>
+                        <option value="Diesel">Diesel</option>
+                        <option value="Unleaded">Unleaded</option>
+                        <option value="Premium">Premium</option>
                     </select>  
                 </div> 
                 <p class="font-inter font-bold text-white">
-                <span class="text-lg">₱ Placeholder</span>
+                <span  id="liters-text" class="text-lg">₱ Placeholder</span>
                 </p></div>
                 
                 </div>
 
                 
-                <div class="bg-[#F8F8FF] p-3 flex flex-col gap-5 border border-[#173161]/20 shadow-md shadow-blue-950/20"> 
+                <div class="bg-white p-3 flex flex-col gap-5 border border-[#173161]/20 shadow-md shadow-blue-950/20"> 
                     <div class="flex flex-row justify-between items-center">
-                            <span class="font-poppins text-[#1F3A69] font-semibold text-base">Transaction List</span>
+                            <span class="font-inter text-[#1F3A69] font-semibold text-base">Transaction List</span>
                             <div class="flex flex-row gap-3">
-                            <form>
                                 <div class="relative">
-                               <input placeholder="Search..." class="p-1 border border-[#1F3A69]/40 rounded-sm font-inter relative text-[#1F3A69] font-normal focus:outline-[#1F3A69]" type="text">
+                               <input id="transaction-search" placeholder="Search..." class="p-1 border border-[#1F3A69]/40 rounded-sm font-inter relative text-[#1F3A69] font-normal focus:outline-[#1F3A69]" type="text">
                                  <i class="fa-solid fa-magnifying-glass absolute right-2 bottom-2 opacity-50"></i>
                             </div> 
-                            </form>
-                            <button class="border border-[#1F3A69] rounded-sm font-inter text-[#1F3A69] font-semibold w-24 p-1 bg-[#E0F1FF]">Filters</button>
                             </div>
 
                             
@@ -162,18 +160,16 @@ if ($_SESSION['role'] !== 'Administrator') {
                         <tr>
                           <th class="px2 py-3">ID</th>
                           <th class="px2 py-3">Date & Time</th>
-                          <th class="px2 py-3">Items</th>
                           <th class="px2 py-3">Payment</th>
                           <th class="px2 py-3">Cashier</th>
                           <th class="px2 py-3">Total</th>
                           <th class="px2 py-3">Status</th>
                         </tr>
                       </thead>
-                      <tbody class="text-[#4E6CA8] text-[12px] font-inter tracking-wide">
+                      <tbody id="full-transactions-tbody" class="text-[#4E6CA8] text-[12px] font-inter tracking-wide">
                         <tr class="even:bg-[#DEEAFF]">
                           <td class="px-2 py-2 font-normal">TRNSX-102139</td>
                           <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
                           <td class="px-2 py-2 font-normal">Cash</td>
                           <td class="px-2 py-2 font-normal">Jonathan Joe</td>
                           <td class="px-2 py-2 font-normal">₱1,210.00</td>
@@ -183,97 +179,7 @@ if ($_SESSION['role'] !== 'Administrator') {
                             </p>
                           </td>
                        </tr>
-                       <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#F50505] px-1 rounded-full text-white text-[10px]">
-                                <span>Void</span>
-                            </p>
-                          </td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#38AC5B] px-1 rounded-full text-white text-[10px]">
-                                <span>Completed</span>
-                            </p>
-                          </td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#F50505] px-1 rounded-full text-white text-[10px]">
-                                <span>Void</span>
-                            </p>
-                          </td>
-                       </tr>
-                        <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#38AC5B] px-1 rounded-full text-white text-[10px]">
-                                <span>Completed</span>
-                            </p>
-                          </td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#F50505] px-1 rounded-full text-white text-[10px]">
-                                <span>Void</span>
-                            </p>
-                          </td>
-                       </tr>
-                        <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#38AC5B] px-1 rounded-full text-white text-[10px]">
-                                <span>Completed</span>
-                            </p>
-                          </td>
-                       </tr>
-                       <tr class="even:bg-[#DEEAFF]">
-                          <td class="px-2 py-2 font-normal">TRNSX-102139</td>
-                          <td class="px-2 py-2 font-normal">01/21/25 11:14 PM</td>
-                          <td class="px-2 py-2 font-normal">4</td>
-                          <td class="px-2 py-2 font-normal">Cash</td>
-                          <td class="px-2 py-2 font-normal">Jonathan Joe</td>
-                          <td class="px-2 py-2 font-normal">₱1,210.00</td>
-                          <td class="px-2 py-2 font-normal">
-                            <p class="bg-[#F50505] px-1 rounded-full text-white text-[10px]">
-                                <span>Void</span>
-                            </p>
-                          </td>
-                       </tr>
+                      
 
                       </tbody>
                   </table>
@@ -285,10 +191,60 @@ if ($_SESSION['role'] !== 'Administrator') {
                    <span class="font-inter font-semibold text-white">Transaction Information</span> 
                 </div>
                 <div class="border bg-white h-full p-3 rounded-bl-lg rounded-br-lg flex flex-col justify-between gap-3">
-                    <div class="flex flex-col justify-center items-center gap-3 h-3/4">
-                        <img src="../assets/Paper.png" class="w-32 h-32">
-                    <span class="text-center font-inter text-black/50 text-base">Click any Transactions from the table for more information.</span>
-                    </div>
+                    <div id="transaction-details" class="hidden flex flex-col justify-center items-center gap-3 h-3/4">
+    <img src="../assets/Paper.png" class="w-32 h-32">
+    <span class="text-center font-inter text-black/50 text-base">Click any Transactions from the table for more information.</span>
+</div>
+
+<div id="transaction-info" class="hidden gap-1 flex w-full font-inter h-full flex-col text-[#1A2F58]">
+  <div class="flex flex-row justify-between items-center text-sm">
+      <span>Transaction ID:</span>
+      <span id="detail-id">Placeholder</span>
+  </div>  
+  <div class="flex flex-row justify-between items-center text-sm">
+      <span>Date & Time:</span>
+      <span id="detail-datetime">Placeholder</span>
+  </div>
+  <div class="flex flex-row justify-between items-center text-sm">
+      <span>Payment Method:</span>
+      <span id="detail-payment">Placeholder</span>
+  </div>
+  <div class="flex flex-row justify-between items-center text-sm mb-2">
+      <span>Reference Number:</span>
+      <span id="detail-reference">Placeholder</span>
+  </div>
+  <div class="w-full max-h-44 min-h-44 rounded border border-[#1A2F58]/30 overflow-y-auto">
+      <table class="w-full text-center border-collapse font-inter"> 
+          <thead class="w-full bg-[#1A2F58] border-collapse text-white text-sm font-inter font-normal tracking-wide shadow-sm">
+              <tr>
+                  <th class="px-1 py-2">Product Name</th>
+                  <th class="px-1 py-2">Quantity</th>
+                  <th class="px-1 py-2">Amount</th>
+              </tr>
+          </thead>
+          <tbody id="detail-items" class="text-sm text-center">
+              <!-- JS will fill this -->
+          </tbody>
+          <tfoot>
+              <tr class="sticky bottom-0 bg-white border-t border-[#1A2F58]/30 text-[#1A2F58]">
+                  <td></td>
+                  <td class="font-bold">Total</td>
+                  <td id="transtotal" class="font-bold text-sm">0.00</td>
+              </tr>
+          </tfoot>
+      </table> 
+  </div>
+  <div class="flex flex-col justify-center w-full h-full">
+      <div class="flex flex-row justify-between items-center text-base mb-2">
+            <span>Total:</span>
+            <span id="detail-total">Placeholder</span>
+      </div>
+      <div class="flex flex-row justify-between items-center text-base mb-2">
+            <span>Change:</span>
+            <span id="detail-change">Placeholder</span>
+        </div>
+    </div>
+  </div>
                     <div class="flex justify-between gap-1 flex-row w-full"> 
                         <button class="border border-[#B22222] text-sm w-1/2 bg-[#FFDDDD] p-1 px-3 rounded-lg font-inter text-[#B22222] disabled:text-[#B22222]/50" disabled>Void Transaction</button>
                         <button class="border border-[#1A2F58] text-sm w-1/2 bg-[#D4E4FF] p-1 px-3 rounded-lg font-inter text-[#1A2F58] disabled:text-[#1A2F58]/50" disabled>Print Receipt</button>

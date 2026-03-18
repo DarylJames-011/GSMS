@@ -418,7 +418,7 @@ border border-[#1A2F58]/50 h-full p-2">
   
 
                 <p class="flex flex-row justify-between font-inter text-white text-sm font-semibold">
-                  <span class="tank-label">Tank 3</span>
+                  <span class="tank-label">Tank 1</span>
                   <span>Diesel</span>
                 </p>
 

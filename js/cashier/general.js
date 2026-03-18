@@ -44,6 +44,8 @@
     }, duration);
 }
 
+fetchShift();
+
 async function fetchShift() {
     try {
         const response = await fetch('../config/active_shift.php', { credentials: 'include' });
@@ -137,6 +139,44 @@ function timeAgo(dateString) {
     return 'more than a day ago';
 }
 
+const log_btn = document.getElementById('log-btn');
+
+log_btn.onclick = () => {
+    openModal1('logout');
+    document.getElementById('log-out').onclick = () => {
+                endShift();
+                        setTimeout(() => {
+                        window.location.href='../config/logout.php';
+                        }, 500); // 500ms delay to give endShift time to complete
+                }
+}
+
+async function endShift() {
+    try {
+        const response = await fetch('../config/end_shift.php', {
+            method: 'POST',
+            credentials: 'include', // important for session
+        });
+
+        const data = await response.json();
+
+        if (response.ok && !data.error) {
+            
+            shiftStart = null; // no active shift
+            
+            updateShiftIndicator(null); // update button and status
+            updateShiftCards();
+            showSnackbar('Shift has been ended', 'success');
+            closeform();
+        } else {
+            console.error(data.error);
+            alert('Error ending shift: ' + (data.error || 'Unknown'));
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 
 function updateShiftIndicator(shiftStart) {
     const statusColor = document.getElementById("status_color");
@@ -164,11 +204,11 @@ function updateShiftIndicator(shiftStart) {
         start_btn.dataset.shiftActive = 'false';
     } else {
         // Shift is active
+        shiftbtn();
         statusColor.classList.remove('bg-red-500');
         statusColor.classList.add('bg-green-500');
         statusText.innerText = `Started ${timeAgo(shiftStart)}`;
 
-        shiftbtn(); 
         start_btn.dataset.shiftActive = 'true';
     }
 }

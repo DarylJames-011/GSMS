@@ -180,66 +180,6 @@ $user_id = $_SESSION['user_id'];
     
   
 
-  
-        <!---Summary--->
-<div id="shiftPanel" class="fixed flex flex-col top-0 right-0 w-[28%] h-screen bg-[#F8F8FD] border border-blue-900 rounded-tl-xl rounded-bl-xl p-5
-transform translate-x-full transition-transform duration-300 ease-in-out delay-200 z-50" >
-    <button class="text-[#1F3A69] font-inter text-base font-normal mb-3 text-left" onclick="closePanel()"><u>Go Back</u></button>
-    <p class="font-poppins font-semibold text-3xl text-[#1F3A69]">Shift Summary</p>
-    <p class="font-poppins text-sm text-[#1F3A69]">Placeholder Date</p>
-    <p class="font-poppins text-sm text-[#1F3A69] mb-4">Placeholder Time</p>
-    <div class="flex flex-col items-center justify-center w-full h-auto">
-        <div class="w-[90%] h-full rounded-lg bg-[#EAF6FF] shadow-[0_4px_4px_1px_rgba(0,0,0,0.25)]
-        flex flex-col p-3 gap-5 mb-4">
-        <p class="font-poppins font-semibold text-[#1F3A69] text-base">Todays Sale</p>
-        <p class="font-poppins font-semibold text-[#1F3A69] text-3xl text-center mb-5">₱00.00</p>
-        <p class="font-inter font-regular text-[#1F3A69] text-[11px]">placeholder comparison</p>
-        </div>
-
-      
-            <div class="border-t border-b border-[#1F3A69] font-inter 
-            text-[14px] font-semibold text-[#1F3A69] p-2 w-[90%]">
-                Shift Stats
-            </div>
-              <div class="divide-y divide-[#1A2F58] divide-opacity-50 divide-dashed w-[90%]">
-            <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm text-[#1F3A69]">No. of Transactions</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-[#1F3A69] text-right ">Placeholder</p>
-            </div>
-             <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm  text-[#1F3A69]">Total Liters Sold</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-[#1F3A69] text-right ">Placeholder</p>
-            </div>
-             <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm text-left text-[#9E3030]">Voided Transactions</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-right text-[#9E3030] ">Placeholder</p>
-            </div>
-            </div>
-            <div class="border-t border-b border-[#1F3A69] w-[90%] font-inter 
-            text-[14px] font-semibold text-[#1F3A69] p-2">
-                Payment Methods Used
-            </div>
-             <div class="divide-y divide-[#1A2F58] divide-opacity-50 divide-dashed w-[90%] mb-4">
-            <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm text-[#1F3A69]">Cash</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-[#1F3A69] text-right ">Placeholder</p>
-            </div>
-             <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm  text-[#1F3A69]">Credit</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-[#1F3A69] text-right ">Placeholder</p>
-            </div>
-             <div class="flex flex-row justify-between w-full py-1">
-            <p class="font-inter font-medium text-sm text-left text-[#1F3A69]">Online</p>
-            <p class="font-inter font-medium text-sm w-[40%] text-right text-[#1F3A69] ">Placeholder</p>
-            </div>
-            </div>
-
-            <p class="font-inter text-[#1F3A69] opacity-75 font-normal text-sm"><u>can view this anytime in the Transactions tab.</u> </p>
-
-        
-    </div>
-</div>
-
 
 
  <div id="snackbar" style="

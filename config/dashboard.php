@@ -110,7 +110,6 @@ try {
     $prevShiftResult = $prevShiftQuery->get_result();
     $prevShift = $prevShiftResult->fetch_assoc() ?? null;
 
-    // 3️⃣ Helper function to get stats
     function getShiftStats($conn, $userId, $shiftStart, $shiftEnd) {
         $query = $conn->prepare("
             SELECT 
@@ -129,11 +128,10 @@ try {
         return $query->get_result()->fetch_assoc();
     }
 
-    // 4️⃣ Get stats for current and previous shift
     $currentStats = $currentShift ? getShiftStats($conn, $userId, $currentShift['shift_start'], date('Y-m-d H:i:s')) : null;
     $prevStats = $prevShift ? getShiftStats($conn, $userId, $prevShift['shift_start'], $prevShift['shift_end']) : null;
 
-    // 5️⃣ Return JSON
+
     echo json_encode([
         'currentShift' => $currentShift ? ['stats' => $currentStats] : null,
         'prevShift' => $prevShift ? ['stats' => $prevStats] : null

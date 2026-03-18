@@ -386,8 +386,7 @@ function renderTable(products) {
         else badgeClass = 'bg-[#DADADA] text-black';
 
         tbody.innerHTML += `
-            <tr>
-            data-id="${product.product_id}">
+            <tr data-id="${product.product_id}">
             <td class="px-1 py-2">${product.product_name}</td>
             <td class="px-1 py-2">${product.stock}</td>
             <td class="px-1 py-2">₱${Number(product.price).toFixed(2)}</td>
